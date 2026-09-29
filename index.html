@@ -1,0 +1,1488 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odd/Even Cipher — Encoder &amp; Decoder</title>
+    <style>
+      :root {
+        /* OFF WHITE THEME */
+        --canvas: #f0eee9;
+        --paper: #fbfaf8;
+        --ink: #2c2925;
+        --muted: #6e6962;
+        --border: #e6e3dc;
+        --odd: #b0224f;
+        --odd-soft: #f8e6ee;
+        --even: #0b615a;
+        --even-soft: #e1f0ee;
+        --error: #b3261e;
+        --error-soft: #fbeaea;
+        --warn: #f59e0b;
+        --success: #10b981;
+        --console-bg: #2c2925;
+        --console-text: #fbfaf8;
+        --console-border: #44403c;
+        --radius: 10px;
+        --mono:
+          "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
+          Consolas, "Liberation Mono", monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      /* DARK THEME */
+      [data-theme="dark"] {
+        /* AMOLED THEME */
+        --canvas: #000000;
+        --paper: #030712;
+        --ink: #e2e8f0;
+        --muted: #64748b;
+        --border: #0f172a;
+        --odd: #ff6b9e;
+        --odd-soft: #4a1c2d;
+        --even: #2ebc9f;
+        --even-soft: #0e3f36;
+        --error: #f85149;
+        --error-soft: #4a1c1e;
+        --console-bg: #020617;
+        --console-border: #1e293b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+
+      .app {
+        max-width: 800px;
+        margin: 40px auto;
+        background: var(--paper);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        position: relative;
+        overflow: visible;
+        box-shadow: 0 1px 2px rgba(20, 24, 32, 0.05);
+      }
+
+      /* HEADER & TOP BUTTONS */
+      .top-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        display: flex;
+        gap: 8px;
+      }
+
+      .icon-btn,
+      .update-btn {
+        background: var(--odd);
+        color: #fff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .icon-btn.dark-toggle {
+        background: var(--ink);
+      }
+      .icon-btn.history-toggle {
+        background: var(--muted);
+      }
+
+      .icon-btn:hover,
+      .update-btn:hover {
+        opacity: 0.85;
+      }
+
+      .floating-box {
+        position: absolute;
+        top: 36px;
+        right: 0;
+        background: var(--paper);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        width: 320px;
+        box-shadow: 0 8px 24px rgba(27, 30, 39, 0.12);
+        display: none;
+      }
+      .floating-box.show {
+        display: block;
+      }
+
+      .hero {
+        padding: 28px 32px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .prompt {
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+      .cursor {
+        display: inline-block;
+        width: 9px;
+        height: 1em;
+        background: var(--ink);
+        margin-left: 3px;
+        vertical-align: -2px;
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      .tagline {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14.5px;
+        max-width: 62ch;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        background: var(--canvas);
+      }
+      .tab-btn {
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 14px 22px;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .tab-btn:hover {
+        color: var(--ink);
+      }
+      .tab-btn.active {
+        color: var(--ink);
+        background: var(--paper);
+        border-bottom-color: var(--ink);
+      }
+
+      .panel {
+        display: none;
+        padding: 28px 32px 32px;
+      }
+      .panel.active {
+        display: block;
+      }
+
+      .field {
+        margin-bottom: 18px;
+      }
+      .field label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 15px;
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        resize: vertical;
+      }
+
+      .options-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: -8px;
+        margin-bottom: 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .options-row input[type="checkbox"] {
+        margin: 0;
+      }
+
+      .row-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 14px 0 6px;
+      }
+      .btn {
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 14px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: var(--paper);
+        cursor: pointer;
+      }
+      .btn:hover {
+        opacity: 0.88;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--border);
+        font-weight: 500;
+      }
+      .btn.swap {
+        background: var(--even);
+        border-color: var(--even);
+        color: #fff;
+        margin-left: auto;
+      }
+      .btn.paste-btn {
+        background: var(--even);
+        border-color: var(--even);
+        color: #fff;
+      }
+      .btn.sm {
+        padding: 6px 12px;
+        font-size: 12.5px;
+      }
+
+      .words-info {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 2px 0 14px;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        font-size: 12.5px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        margin-right: 6px;
+        vertical-align: 1px;
+      }
+      .swatch.odd {
+        background: var(--odd);
+      }
+      .swatch.even {
+        background: var(--even);
+      }
+
+      .strength-container {
+        margin: 15px 0;
+      }
+      .strength-label {
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .strength-bar-wrap {
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .strength-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--error);
+        transition:
+          width 0.4s,
+          background 0.4s;
+      }
+
+      .shift-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px dashed var(--border);
+        flex-wrap: wrap;
+      }
+      .row-num {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--muted);
+        width: 18px;
+        flex-shrink: 0;
+      }
+      .row-word {
+        flex: 1 1 160px;
+        min-width: 110px;
+        font-family: var(--mono);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        word-break: break-all;
+      }
+      .letter.odd {
+        color: var(--odd);
+      }
+      .letter.even {
+        color: var(--even);
+      }
+      .letter.placeholder {
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      .row-inputs {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      .shift-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .shift-field input {
+        width: 72px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 14px;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+      .shift-field.odd input {
+        border-left: 3px solid var(--odd);
+      }
+      .shift-field.even input {
+        border-left: 3px solid var(--even);
+      }
+      .shift-field input.invalid {
+        border-color: var(--error);
+        background: var(--error-soft);
+      }
+
+      .fast-fill-wrap {
+        margin: 20px 0 16px;
+        padding: 14px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .fast-fill-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        margin: 0 0 10px;
+      }
+      .fast-fill-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+      }
+      .fast-fill-field {
+        flex: 1;
+        min-width: 140px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .fast-fill-field input {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 14px;
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .presets-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .presets-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-right: 4px;
+      }
+
+      .alert {
+        padding: 12px 14px;
+        border-left: 4px solid;
+        border-radius: 6px;
+        font-size: 14px;
+        margin: 16px 0 0;
+      }
+      .alert-error {
+        background: var(--error-soft);
+        border-color: var(--error);
+        color: var(--error);
+      }
+      .alert-success {
+        background: var(--even-soft);
+        border-color: var(--even);
+        color: var(--even);
+      }
+
+      .console-wrap {
+        margin-top: 20px;
+      }
+      .console-label {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .console {
+        background: var(--console-bg);
+        color: var(--console-text);
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .console-text {
+        font-family: var(--mono);
+        font-size: 15px;
+        word-break: break-all;
+      }
+      .copy-btn {
+        flex-shrink: 0;
+        background: transparent;
+        border: 1px solid var(--console-border);
+        color: var(--console-text);
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-family: var(--sans);
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 12px;
+        color: var(--ink);
+      }
+      .history-item {
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .history-item:last-child {
+        border-bottom: none;
+      }
+      .history-item strong {
+        color: var(--odd);
+        font-family: var(--mono);
+      }
+      .history-empty {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 10px;
+      }
+
+      .app-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 800px;
+        margin: 0 auto 20px auto;
+        padding: 0 10px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- TOP CONTROLS -->
+      <div class="top-controls">
+        <button id="historyBtn" class="icon-btn history-toggle" title="History">
+          ⏱
+        </button>
+        <button
+          id="themeBtn"
+          class="icon-btn dark-toggle"
+          title="Alternar Tema"
+        >
+          🌙
+        </button>
+        <div style="position: relative">
+          <button id="updateLogBtn" class="update-btn">v1.10.0</button>
+          <div id="updateLogBox" class="floating-box">
+            <h3 style="margin: 0; font-family: var(--mono); font-size: 14px">
+              UPDATE V1.10.0
+            </h3>
+            <hr
+              style="
+                border: 0;
+                border-top: 1px dashed var(--border);
+                margin: 10px 0;
+              "
+            />
+            <ul
+              style="
+                margin: 0;
+                padding-left: 20px;
+                font-size: 12.5px;
+                color: var(--muted);
+              "
+            >
+              <li>Added "Copy All" / "Paste All" data transfer.</li>
+              <li>Added footer texts at the bottom of the page.</li>
+              <li>Prevented letter input in number-only fields.</li>
+              <li>Added Quick Fill (autofill) feature.</li>
+              <li>Dark Mode & Light Mode themes.</li>
+            </ul>
+          </div>
+        </div>
+        <!-- HISTORY BOX -->
+        <div id="historyBox" class="floating-box" style="right: 80px">
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-family: var(--mono);
+              font-size: 14px;
+            "
+          >
+            Recent History
+          </h3>
+          <ul id="historyList" class="history-list">
+            <li class="history-empty">No recent operations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="hero">
+        <p class="prompt">$ cipher --odd-even<span class="cursor"></span></p>
+        <p class="tagline">
+          Encode and decode phrases with Caesar cipher applied separately to odd
+          and even position letters of each word.
+        </p>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button
+          class="tab-btn active"
+          role="tab"
+          data-tab="encode"
+          id="tab-encode"
+        >
+          encode.js
+        </button>
+        <button class="tab-btn" role="tab" data-tab="decode" id="tab-decode">
+          decode.js
+        </button>
+      </div>
+
+      <!-- ===================== PANEL: ENCODER ===================== -->
+      <section class="panel active" id="panel-encode" role="tabpanel">
+        <div class="field">
+          <label for="encPhrase">Original phrase</label>
+          <textarea
+            id="encPhrase"
+            rows="2"
+            placeholder="Ex.: Stuck in the rooms"
+          ></textarea>
+        </div>
+        <div class="options-row">
+          <input type="checkbox" id="encKeepSpecial" />
+          <label for="encKeepSpecial" style="margin: 0; font-size: 13px"
+            >Preserve special characters and accents (A-Z/a-z will be ciphered,
+            the rest stays intact)</label
+          >
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="encConfigBtn">
+            Configure shifts
+          </button>
+          <button type="button" class="btn ghost" id="encClearBtn">
+            Clear
+          </button>
+        </div>
+
+        <p class="words-info" id="encWordsInfo" hidden></p>
+        <p class="legend" id="encLegend" hidden>
+          <span
+            ><span class="swatch odd"></span>odd position (1st, 3rd...)</span
+          >
+          <span
+            ><span class="swatch even"></span>even position (2nd, 4th...)</span
+          >
+        </p>
+
+        <!-- STRENGTH INDICATOR -->
+        <div class="strength-container" id="encStrengthContainer" hidden>
+          <div class="strength-label">
+            <span>Cipher Strength</span>
+            <span id="encStrengthText">Weak</span>
+          </div>
+          <div class="strength-bar-wrap">
+            <div id="encStrengthBar" class="strength-fill"></div>
+          </div>
+        </div>
+
+        <div id="encShiftsContainer" data-word-count="0"></div>
+
+        <div class="fast-fill-wrap" id="encFastFill" hidden>
+          <p class="fast-fill-title">Quick Fill / Advanced Patterns</p>
+          <div class="fast-fill-row">
+            <label class="fast-fill-field odd">
+              <span>Odd Pattern (Ex: 2 or 1,4)</span>
+              <input
+                type="text"
+                id="encFastOdd"
+                placeholder="Ex: 2"
+                autocomplete="off"
+              />
+            </label>
+            <label class="fast-fill-field even">
+              <span>Even Pattern (Ex: 5 or 3,2)</span>
+              <input
+                type="text"
+                id="encFastEven"
+                placeholder="Ex: 5"
+                autocomplete="off"
+              />
+            </label>
+            <button type="button" class="btn" id="encFastApplyBtn">
+              Apply
+            </button>
+            <button
+              type="button"
+              class="btn ghost"
+              id="encRandomBtn"
+              title="Random shifts"
+              style="padding: 10px 14px"
+            >
+              🎲
+            </button>
+          </div>
+          <div class="presets-row">
+            <span class="presets-label">Presets:</span>
+            <button type="button" class="btn ghost sm" id="presetRot13">
+              ROT13
+            </button>
+            <button type="button" class="btn ghost sm" id="presetFibonacci">
+              Fibonacci
+            </button>
+            <button type="button" class="btn ghost sm" id="presetProgressive">
+              Progressive (+1,+2)
+            </button>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn" id="encSubmitBtn">Encode</button>
+          <button type="button" class="btn swap" id="swapBtn" hidden>
+            Transfer to Decoder ⇄
+          </button>
+        </div>
+
+        <div id="encAlert" class="alert" hidden></div>
+
+        <div class="console-wrap" id="encResultWrap" hidden>
+          <p class="console-label">// encoded result</p>
+          <div class="console">
+            <span class="console-text" id="encResult"></span>
+            <button type="button" class="copy-btn" id="encCopyBtn">copy</button>
+          </div>
+          <p class="console-label" style="margin-top: 18px">// word lengths</p>
+          <div class="console">
+            <span class="console-text" id="encSizes"></span>
+            <button type="button" class="copy-btn" id="encSizesCopyBtn">
+              copy
+            </button>
+          </div>
+          <p class="console-label" style="margin-top: 18px">
+            // shifts used (odd, even)
+          </p>
+          <div class="console">
+            <span class="console-text" id="encShiftsResult"></span>
+            <button type="button" class="copy-btn" id="encShiftsCopyBtn">
+              copy
+            </button>
+          </div>
+
+          <div style="margin-top: 20px">
+            <button
+              type="button"
+              class="btn"
+              id="encCopyAllBtn"
+              style="width: 100%; border-radius: 8px"
+            >
+              Copy All Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PANEL: DECODER ===================== -->
+      <section class="panel" id="panel-decode" role="tabpanel">
+        <div class="row-actions" style="margin-bottom: 18px; margin-top: 0">
+          <button type="button" class="btn paste-btn" id="decPasteAllBtn">
+            Paste Data 📋
+          </button>
+        </div>
+
+        <div class="field">
+          <label for="decMessage">Encoded message</label>
+          <textarea
+            id="decMessage"
+            rows="2"
+            placeholder="Ex.: Fscxsvyvhnubtxy"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="decSizes"
+            >Original word lengths (separated by commas)</label
+          >
+          <input type="text" id="decSizes" placeholder="Ex.: 5, 2, 3, 5" />
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="decConfigBtn">
+            Configure shifts
+          </button>
+          <button type="button" class="btn ghost" id="decClearBtn">
+            Clear
+          </button>
+        </div>
+
+        <p class="words-info" id="decWordsInfo" hidden></p>
+
+        <div id="decShiftsContainer" data-word-count="0"></div>
+
+        <div class="row-actions">
+          <button type="button" class="btn" id="decSubmitBtn">Decode</button>
+        </div>
+
+        <div id="decAlert" class="alert" hidden></div>
+
+        <div class="console-wrap" id="decResultWrap" hidden>
+          <p class="console-label">// original phrase</p>
+          <div class="console">
+            <span class="console-text" id="decResult"></span>
+            <button type="button" class="copy-btn" id="decCopyBtn">copy</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- === FOOTER === -->
+    <footer class="app-footer">
+      <span class="footer-left">Odd/Even Cipher v1.10.0</span>
+      <span class="footer-center">"Aqui é o Brasil" —Dominic Toretto</span>
+      <span class="footer-right">Doppelsoldner-Web</span>
+    </footer>
+
+    <script>
+      /* =========================================================================
+         STATE & CONFIG
+         ========================================================================= */
+      let historyData = JSON.parse(localStorage.getItem("cipherHistory")) || [];
+      const MAX_HISTORY = 5;
+
+      // Gestão de Temas (light, dark)
+      const themeBtn = document.getElementById("themeBtn");
+      const themes = ["light", "dark"];
+
+      let currentTheme = localStorage.getItem("cipherTheme") || "light";
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateThemeIcon(currentTheme);
+
+      function updateThemeIcon(theme) {
+        if (theme === "light") {
+          themeBtn.textContent = "🌙";
+          themeBtn.title = "Ativar Modo Escuro";
+        } else {
+          themeBtn.textContent = "☀️";
+          themeBtn.title = "Ativar Modo Claro";
+        }
+      }
+
+      themeBtn.addEventListener("click", () => {
+        const currentIndex = themes.indexOf(currentTheme);
+        const nextIndex = (currentIndex + 1) % themes.length;
+        currentTheme = themes[nextIndex];
+
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        localStorage.setItem("cipherTheme", currentTheme);
+        updateThemeIcon(currentTheme);
+      });
+
+      /* =========================================================================
+         CIPHER LOGIC
+         ========================================================================= */
+      function normalizeText(text, keepSpecial) {
+        if (keepSpecial) return text;
+        return text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z\s]/g, "");
+      }
+
+      function splitWords(phrase, keepSpecial) {
+        return normalizeText(phrase, keepSpecial)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+      }
+
+      function processLetter(char, shift, reverse = false) {
+        const isUpper = char >= "A" && char <= "Z";
+        const isLower = char >= "a" && char <= "z";
+        if (!isUpper && !isLower) return char;
+
+        const base = isUpper ? 65 : 97;
+        const originalCode = char.charCodeAt(0) - base;
+        const effect = reverse ? -shift : shift;
+        const resultCode = (((originalCode + effect) % 26) + 26) % 26;
+        return String.fromCharCode(resultCode + base);
+      }
+
+      function customCipher(phrase, shifts, keepSpecial) {
+        const words = splitWords(phrase, keepSpecial);
+        const cipheredWords = words.map((word, idx) => {
+          const [oddShift, evenShift] = shifts[idx];
+          let validLetterCount = 0;
+          return word
+            .split("")
+            .map((char) => {
+              const isLetter =
+                (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
+              if (isLetter) validLetterCount++;
+              const isOdd = validLetterCount % 2 !== 0;
+              const shiftVal = isOdd ? oddShift : evenShift;
+              return processLetter(char, shiftVal);
+            })
+            .join("");
+        });
+
+        const maxLength = Math.max(...cipheredWords.map((p) => p.length));
+        let result = "";
+        for (let pos = 0; pos < maxLength; pos++) {
+          for (const word of cipheredWords) {
+            if (pos < word.length) result += word[pos];
+          }
+        }
+        return result;
+      }
+
+      function customDecipher(cipheredString, shifts, lengths) {
+        const cipheredWords = lengths.map(() => "");
+        let cursor = 0;
+        const maxLength = Math.max(...lengths);
+
+        for (let pos = 0; pos < maxLength; pos++) {
+          for (let i = 0; i < lengths.length; i++) {
+            if (pos < lengths[i]) {
+              cipheredWords[i] += cipheredString[cursor];
+              cursor++;
+            }
+          }
+        }
+
+        const originalWords = cipheredWords.map((word, idx) => {
+          const [oddShift, evenShift] = shifts[idx];
+          let validLetterCount = 0;
+          return word
+            .split("")
+            .map((char) => {
+              const isLetter =
+                (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
+              if (isLetter) validLetterCount++;
+              const isOdd = validLetterCount % 2 !== 0;
+              const shiftVal = isOdd ? oddShift : evenShift;
+              return processLetter(char, shiftVal, true);
+            })
+            .join("");
+        });
+        return originalWords.join(" ");
+      }
+
+      /* =========================================================================
+         HISTORY
+         ========================================================================= */
+      function renderHistory() {
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        if (historyData.length === 0) {
+          list.innerHTML = `<li class="history-empty">No recent operations.</li>`;
+          return;
+        }
+        historyData.forEach((item) => {
+          const li = document.createElement("li");
+          li.className = "history-item";
+          li.innerHTML = `<span><strong>${item.type}:</strong> ${item.input.substring(0, 20)}...</span>
+                          <span style="color:var(--muted)">Res: ${item.output.substring(0, 20)}...</span>`;
+          list.appendChild(li);
+        });
+      }
+
+      function addHistory(type, input, output) {
+        historyData.unshift({ type, input, output });
+        if (historyData.length > MAX_HISTORY) historyData.pop();
+        localStorage.setItem("cipherHistory", JSON.stringify(historyData));
+        renderHistory();
+      }
+      renderHistory();
+
+      /* =========================================================================
+         UI HELPERS & COPY FUNCTIONALITY
+         ========================================================================= */
+      function escapeHtml(str) {
+        return str.replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      function showAlert(el, type, msg) {
+        el.className = "alert alert-" + type;
+        el.textContent = msg;
+        el.hidden = false;
+      }
+      function clearAlert(el) {
+        el.hidden = true;
+        el.textContent = "";
+      }
+
+      function copyToClipboard(text, btnEl) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+          const original = btnEl.textContent;
+          btnEl.textContent = "copied!";
+          setTimeout(() => {
+            btnEl.textContent = original;
+          }, 1500);
+        });
+      }
+
+      document.getElementById("encCopyBtn").addEventListener("click", (e) => {
+        copyToClipboard(
+          document.getElementById("encResult").textContent,
+          e.target,
+        );
+      });
+      document
+        .getElementById("encSizesCopyBtn")
+        .addEventListener("click", (e) => {
+          copyToClipboard(
+            document.getElementById("encSizes").textContent,
+            e.target,
+          );
+        });
+      document
+        .getElementById("encShiftsCopyBtn")
+        .addEventListener("click", (e) => {
+          copyToClipboard(
+            document.getElementById("encShiftsResult").textContent,
+            e.target,
+          );
+        });
+      document.getElementById("decCopyBtn").addEventListener("click", (e) => {
+        copyToClipboard(
+          document.getElementById("decResult").textContent,
+          e.target,
+        );
+      });
+
+      // Copiar Tudo (Encoder)
+      document
+        .getElementById("encCopyAllBtn")
+        .addEventListener("click", (e) => {
+          const msg = document.getElementById("encResult").textContent;
+          const sizes = document.getElementById("encSizes").textContent;
+          const shifts = document.getElementById("encShiftsResult").textContent;
+
+          const payload = `Message: ${msg}\nLengths: ${sizes}\nShifts: ${shifts}`;
+          copyToClipboard(payload, e.target);
+        });
+
+      // Colar Tudo (Decoder)
+      document
+        .getElementById("decPasteAllBtn")
+        .addEventListener("click", async () => {
+          try {
+            const text = await navigator.clipboard.readText();
+
+            const msgMatch = text.match(/Message:\s*(.+)/i);
+            const lenMatch = text.match(/Lengths:\s*(.+)/i);
+            const shfMatch = text.match(/Shifts:\s*(.+)/i);
+
+            if (!msgMatch && !lenMatch && !shfMatch) {
+              showAlert(
+                document.getElementById("decAlert"),
+                "error",
+                "No valid cipher data found in clipboard.",
+              );
+              return;
+            }
+
+            if (msgMatch)
+              document.getElementById("decMessage").value = msgMatch[1].trim();
+            if (lenMatch)
+              document.getElementById("decSizes").value = lenMatch[1].trim();
+
+            if (msgMatch && lenMatch) {
+              document.getElementById("decConfigBtn").click();
+            }
+
+            if (shfMatch) {
+              const shiftPairs = [
+                ...shfMatch[1].matchAll(/\[(\d+),\s*(\d+)\]/g),
+              ];
+              const oddInputs = document.querySelectorAll(".dec-odd");
+              const evenInputs = document.querySelectorAll(".dec-even");
+
+              shiftPairs.forEach((pair, idx) => {
+                if (oddInputs[idx]) oddInputs[idx].value = pair[1];
+                if (evenInputs[idx]) evenInputs[idx].value = pair[2];
+              });
+            }
+
+            showAlert(
+              document.getElementById("decAlert"),
+              "success",
+              "Data pasted and configured automatically!",
+            );
+          } catch (err) {
+            showAlert(
+              document.getElementById("decAlert"),
+              "error",
+              "Failed to read clipboard. Please check permissions.",
+            );
+          }
+        });
+
+      /* =========================================================================
+         SHIFT INPUT VALIDATION & SMART AUTO-ADVANCE
+         ========================================================================= */
+      function setupShiftInputsContainer(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.addEventListener("keydown", (e) => {
+          if (e.target.matches("input[type='number']")) {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault();
+              return;
+            }
+            if (e.key === "Enter") {
+              e.preventDefault();
+              focusNextInput(e.target, container);
+            }
+          }
+        });
+
+        container.addEventListener("input", (e) => {
+          const input = e.target;
+          if (input.matches("input[type='number']")) {
+            let val = input.value.replace(/\D/g, "");
+            if (val !== "") {
+              let num = parseInt(val, 10);
+              if (num > 25) num = 25;
+              input.value = num;
+            }
+
+            evaluateStrength();
+
+            if (input.value.length >= 2) {
+              focusNextInput(input, container);
+            }
+          }
+        });
+      }
+
+      function focusNextInput(currentInput, container) {
+        const inputs = Array.from(
+          container.querySelectorAll("input[type='number']"),
+        );
+        const index = inputs.indexOf(currentInput);
+        if (index >= 0 && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+          inputs[index + 1].select();
+        }
+      }
+
+      setupShiftInputsContainer("encShiftsContainer");
+      setupShiftInputsContainer("decShiftsContainer");
+
+      /* =========================================================================
+         STRENGTH CALCULATOR
+         ========================================================================= */
+      function evaluateStrength() {
+        const oddInputs = [...document.querySelectorAll(".enc-odd")].map(
+          (i) => Number(i.value) || 0,
+        );
+        const evenInputs = [...document.querySelectorAll(".enc-even")].map(
+          (i) => Number(i.value) || 0,
+        );
+        if (oddInputs.length === 0) return;
+
+        const uniqueShifts = new Set([...oddInputs, ...evenInputs]).size;
+        const totalFields = oddInputs.length + evenInputs.length;
+
+        let score = (uniqueShifts / totalFields) * 100;
+        const bar = document.getElementById("encStrengthBar");
+        const text = document.getElementById("encStrengthText");
+
+        if (score <= 20) {
+          bar.style.width = "33%";
+          bar.style.background = "var(--error)";
+          text.textContent = "Weak";
+        } else if (score <= 60) {
+          bar.style.width = "66%";
+          bar.style.background = "var(--warn)";
+          text.textContent = "Medium";
+        } else {
+          bar.style.width = "100%";
+          bar.style.background = "var(--success)";
+          text.textContent = "Strong";
+        }
+      }
+
+      // Tabs
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          document
+            .querySelectorAll(".panel")
+            .forEach((p) => p.classList.remove("active"));
+          document
+            .getElementById("panel-" + btn.dataset.tab)
+            .classList.add("active");
+        });
+      });
+
+      /* =========================================================================
+         ENCODER
+         ========================================================================= */
+      const encKeepSpecial = document.getElementById("encKeepSpecial");
+
+      function buildEncShiftRow(index, word) {
+        const letters = word
+          .split("")
+          .map(
+            (ch, i) =>
+              `<span class="letter ${i % 2 === 0 ? "odd" : "even"}">${escapeHtml(ch)}</span>`,
+          )
+          .join("");
+        return `
+        <div class="shift-row">
+          <span class="row-num">${index + 1}</span>
+          <span class="row-word">${letters}</span>
+          <div class="row-inputs">
+            <label class="shift-field odd"><input type="number" min="0" max="25" class="enc-odd" placeholder="0-25"></label>
+            <label class="shift-field even"><input type="number" min="0" max="25" class="enc-even" placeholder="0-25"></label>
+          </div>
+        </div>`;
+      }
+
+      document.getElementById("encConfigBtn").addEventListener("click", () => {
+        const words = splitWords(encPhrase.value, encKeepSpecial.checked);
+        if (words.length === 0)
+          return showAlert(encAlert, "error", "Enter a phrase.");
+        document.getElementById("encShiftsContainer").innerHTML = words
+          .map((w, i) => buildEncShiftRow(i, w))
+          .join("");
+        document.getElementById("encWordsInfo").hidden = false;
+        document.getElementById("encLegend").hidden = false;
+        document.getElementById("encFastFill").hidden = false;
+        document.getElementById("encStrengthContainer").hidden = false;
+        document.getElementById("encWordsInfo").textContent =
+          `${words.length} words detected.`;
+        evaluateStrength();
+      });
+
+      // Clear Encoder
+      document.getElementById("encClearBtn").addEventListener("click", () => {
+        document.getElementById("encPhrase").value = "";
+        document.getElementById("encShiftsContainer").innerHTML = "";
+        document.getElementById("encWordsInfo").hidden = true;
+        document.getElementById("encLegend").hidden = true;
+        document.getElementById("encFastFill").hidden = true;
+        document.getElementById("encStrengthContainer").hidden = true;
+        document.getElementById("encResultWrap").hidden = true;
+        document.getElementById("swapBtn").hidden = true;
+        clearAlert(document.getElementById("encAlert"));
+      });
+
+      // Quick Fill & Presets
+      document
+        .getElementById("encFastApplyBtn")
+        .addEventListener("click", () => {
+          const oddVal = document.getElementById("encFastOdd").value.trim();
+          const evenVal = document.getElementById("encFastEven").value.trim();
+
+          const oddArray = oddVal
+            ? oddVal
+                .split(",")
+                .map((n) => Math.min(25, Math.max(0, Number(n.trim()) || 0)))
+            : null;
+          const evenArray = evenVal
+            ? evenVal
+                .split(",")
+                .map((n) => Math.min(25, Math.max(0, Number(n.trim()) || 0)))
+            : null;
+
+          if (oddArray) {
+            document.querySelectorAll(".enc-odd").forEach((inp, idx) => {
+              if (!inp.value || inp.value === "0") {
+                inp.value = oddArray[idx % oddArray.length];
+              }
+            });
+          }
+
+          if (evenArray) {
+            document.querySelectorAll(".enc-even").forEach((inp, idx) => {
+              if (!inp.value || inp.value === "0") {
+                inp.value = evenArray[idx % evenArray.length];
+              }
+            });
+          }
+
+          evaluateStrength();
+        });
+
+      document.getElementById("presetRot13").addEventListener("click", () => {
+        document
+          .querySelectorAll(".enc-odd, .enc-even")
+          .forEach((i) => (i.value = 13));
+        evaluateStrength();
+      });
+
+      document
+        .getElementById("presetFibonacci")
+        .addEventListener("click", () => {
+          const fib = [1, 2, 3, 5, 8, 13, 21];
+          document
+            .querySelectorAll(".enc-odd")
+            .forEach((inp, idx) => (inp.value = fib[idx % fib.length]));
+          document
+            .querySelectorAll(".enc-even")
+            .forEach((inp, idx) => (inp.value = fib[(idx + 1) % fib.length]));
+          evaluateStrength();
+        });
+
+      document
+        .getElementById("presetProgressive")
+        .addEventListener("click", () => {
+          document
+            .querySelectorAll(".enc-odd")
+            .forEach((inp, idx) => (inp.value = (idx + 1) % 26));
+          document
+            .querySelectorAll(".enc-even")
+            .forEach((inp, idx) => (inp.value = (idx + 2) % 26));
+          evaluateStrength();
+        });
+
+      document.getElementById("encRandomBtn").addEventListener("click", () => {
+        document
+          .querySelectorAll(".enc-odd, .enc-even")
+          .forEach((i) => (i.value = Math.floor(Math.random() * 26)));
+        evaluateStrength();
+      });
+
+      document.getElementById("encSubmitBtn").addEventListener("click", () => {
+        const phrase = encPhrase.value;
+        const words = splitWords(phrase, encKeepSpecial.checked);
+        const oddInputs = document.querySelectorAll(".enc-odd");
+        const evenInputs = document.querySelectorAll(".enc-even");
+
+        if (oddInputs.length !== words.length)
+          return showAlert(encAlert, "error", "Reconfigure the shifts.");
+
+        const shifts = [];
+        for (let i = 0; i < words.length; i++) {
+          shifts.push([
+            Number(oddInputs[i].value),
+            Number(evenInputs[i].value),
+          ]);
+        }
+
+        const result = customCipher(phrase, shifts, encKeepSpecial.checked);
+        const lengths = words.map((w) => w.length).join(", ");
+        const formattedShifts = shifts
+          .map((s) => `[${s[0]}, ${s[1]}]`)
+          .join(", ");
+
+        document.getElementById("encResult").textContent = result;
+        document.getElementById("encSizes").textContent = lengths;
+        document.getElementById("encShiftsResult").textContent =
+          formattedShifts;
+        document.getElementById("encResultWrap").hidden = false;
+        document.getElementById("swapBtn").hidden = false;
+        showAlert(encAlert, "success", "Encoded successfully.");
+        addHistory("Encode", phrase, result);
+      });
+
+      // SWAP / FLIP
+      document.getElementById("swapBtn").addEventListener("click", () => {
+        document.getElementById("decMessage").value =
+          document.getElementById("encResult").textContent;
+        document.getElementById("decSizes").value =
+          document.getElementById("encSizes").textContent;
+        document.getElementById("tab-decode").click();
+      });
+
+      /* =========================================================================
+         DECODER
+         ========================================================================= */
+      document.getElementById("decConfigBtn").addEventListener("click", () => {
+        const sizes = document
+          .getElementById("decSizes")
+          .value.split(",")
+          .map(Number)
+          .filter((n) => n > 0);
+        if (!sizes.length)
+          return showAlert(decAlert, "error", "Enter the lengths.");
+        const html = sizes
+          .map(
+            (s, i) => `
+          <div class="shift-row">
+            <span class="row-num">${i + 1}</span>
+            <div class="row-inputs">
+              <label class="shift-field odd"><input type="number" min="0" max="25" class="dec-odd" placeholder="0-25"></label>
+              <label class="shift-field even"><input type="number" min="0" max="25" class="dec-even" placeholder="0-25"></label>
+            </div>
+          </div>
+        `,
+          )
+          .join("");
+        document.getElementById("decShiftsContainer").innerHTML = html;
+        document.getElementById("decWordsInfo").hidden = false;
+        document.getElementById("decWordsInfo").textContent =
+          `${sizes.length} words expected.`;
+      });
+
+      // Clear Decoder
+      document.getElementById("decClearBtn").addEventListener("click", () => {
+        document.getElementById("decMessage").value = "";
+        document.getElementById("decSizes").value = "";
+        document.getElementById("decShiftsContainer").innerHTML = "";
+        document.getElementById("decWordsInfo").hidden = true;
+        document.getElementById("decResultWrap").hidden = true;
+        clearAlert(document.getElementById("decAlert"));
+      });
+
+      document.getElementById("decSubmitBtn").addEventListener("click", () => {
+        const msg = document
+          .getElementById("decMessage")
+          .value.replace(/\s+/g, "");
+        const sizes = document
+          .getElementById("decSizes")
+          .value.split(",")
+          .map(Number)
+          .filter((n) => n > 0);
+        const shifts = [];
+        const oddInputs = document.querySelectorAll(".dec-odd");
+        const evenInputs = document.querySelectorAll(".dec-even");
+
+        if (oddInputs.length !== sizes.length)
+          return showAlert(decAlert, "error", "Reconfigure the shifts.");
+
+        for (let i = 0; i < sizes.length; i++) {
+          shifts.push([
+            Number(oddInputs[i].value),
+            Number(evenInputs[i].value),
+          ]);
+        }
+
+        const res = customDecipher(msg, shifts, sizes);
+        document.getElementById("decResult").textContent = res;
+        document.getElementById("decResultWrap").hidden = false;
+        showAlert(decAlert, "success", "Decoded successfully.");
+        addHistory("Decode", msg, res);
+      });
+
+      /* =========================================================================
+         POPUP MENUS (Updates & History)
+         ========================================================================= */
+      function toggleBox(btnId, boxId) {
+        const btn = document.getElementById(btnId);
+        const box = document.getElementById(boxId);
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          document.querySelectorAll(".floating-box").forEach((b) => {
+            if (b !== box) b.classList.remove("show");
+          });
+          box.classList.toggle("show");
+        });
+      }
+      toggleBox("updateLogBtn", "updateLogBox");
+      toggleBox("historyBtn", "historyBox");
+
+      document.addEventListener("click", (e) => {
+        if (
+          !e.target.closest(".floating-box") &&
+          !e.target.closest(".update-btn") &&
+          !e.target.closest(".history-toggle")
+        ) {
+          document
+            .querySelectorAll(".floating-box")
+            .forEach((b) => b.classList.remove("show"));
+        }
+      });
+    </script>
+  </body>
+</html>
