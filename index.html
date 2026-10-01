@@ -1,0 +1,3136 @@
+<!--
+======================================================================
+MIT License
+
+Copyright (c) 2026
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+======================================================================
+-->
+
+<!doctype html>
+<!-- 
+  The <html> tag is the root of every web document. 
+  The "lang='en'" attribute tells the browser and screen readers the main language.
+  The "data-theme='light'" attribute is a custom data attribute used by JavaScript and CSS 
+  to identify and switch the page's current color theme.
+-->
+<html lang="en" data-theme="light">
+  <head>
+    <!-- 
+      A tag <meta charset="UTF-8"> garante que caracteres especiais (como acentos) 
+      sejam lidos corretamente pelo navegador.
+    -->
+    <meta charset="UTF-8" />
+
+    <!-- 
+      The <meta name="viewport"> tag is essential for a responsive site.
+      It makes the page width match the phone screen width,
+      preventing the site from showing up with a tiny zoom.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- A tag <title> define o nome da aba no navegador. -->
+    <title>Odd/Even Cipher — Encoder &amp; Decoder</title>
+
+    <!--
+    /* ==================================
+       CSS STYLES
+       ================================== */
+    Aqui começa a estilização visual (CSS). O CSS controla cores, posições, fontes e animações.
+    -->
+    <style>
+      /* 
+        A pseudoclasse :root seleciona a raiz do documento (o <html>). 
+        Aqui, estamos definindo "Variáveis CSS" (Custom Properties) que começam com --.
+        Isso permite reutilizar cores em todo o arquivo e facilitar a troca de tema.
+      */
+      :root {
+        /* OFF WHITE THEME */
+        --canvas: #f0eee9;
+        --paper: #fbfaf8;
+        --ink: #2c2925;
+        --muted: #6e6962;
+        --border: #e6e3dc;
+        --odd: #b0224f;
+        --odd-soft: #f8e6ee;
+        --even: #0b615a;
+        --even-soft: #e1f0ee;
+        --error: #b3261e;
+        --error-soft: #fbeaea;
+        --warn: #f59e0b;
+        --success: #10b981;
+        --console-bg: #2c2925;
+        --console-text: #fbfaf8;
+        --console-border: #44403c;
+        --radius: 10px;
+        --mono:
+          "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
+          Consolas, "Liberation Mono", monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      /* 
+        DARK THEME 
+        Este seletor substitui as variáveis acima apenas quando o <html> tem o atributo data-theme="dark".
+        Isso é o que permite a mudança instantânea entre os modos claro e escuro.
+      */
+      [data-theme="dark"] {
+        /* AMOLED THEME */
+        --canvas: #000000;
+        --paper: #030712;
+        --ink: #e2e8f0;
+        --muted: #64748b;
+        --border: #0f172a;
+        --odd: #ff6b9e;
+        --odd-soft: #4a1c2d;
+        --even: #2ebc9f;
+        --even-soft: #0e3f36;
+        --error: #f85149;
+        --error-soft: #4a1c1e;
+        --console-bg: #020617;
+        --console-border: #1e293b;
+      }
+
+      /* 
+        O asterisco (*) é um seletor universal.
+        'box-sizing: border-box' garante que bordas e preenchimentos (padding) não 
+        aumentem a largura total declarada dos elementos.
+      */
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased; /* Suaviza a fonte no macOS/iOS */
+        /* A transição (transition) cria uma mudança suave de cor ao alternar temas, durando 0.3 segundos. */
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+
+      /* Classe do container principal do aplicativo */
+      .app {
+        max-width: 800px;
+        margin: 40px auto; /* Centraliza a caixa no meio da tela */
+        background: var(--paper);
+        border: 1px solid var(--border);
+        border-radius: var(
+          --radius
+        ); /* Arredonda os cantos usando a variável */
+        position: relative; /* Permite posicionar elementos 'absolute' dentro desta caixa */
+        overflow: visible;
+        box-shadow: 0 1px 2px rgba(20, 24, 32, 0.05); /* Sombra sutil para profundidade */
+      }
+
+      /* HEADER & TOP BUTTONS */
+      .top-controls {
+        position: absolute; /* Fixado em relação à classe .app pai */
+        top: 20px;
+        right: 20px;
+        z-index: 100; /* Garante que fique acima de outros elementos na tela */
+        display: flex; /* Usa Flexbox para colocar os botões lado a lado */
+        gap: 8px; /* Espaço entre os botões */
+      }
+
+      .icon-btn,
+      .update-btn {
+        background: var(--odd);
+        color: #fff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer; /* Muda a setinha do mouse para uma "mãozinha" */
+        transition: opacity 0.2s; /* Ao passar o mouse, a mudança de transparência será suave */
+        height: 26px;
+        display: flex;
+        align-items: center; /* Centraliza o texto no meio vertical */
+        justify-content: center; /* Centraliza no meio horizontal */
+      }
+      .icon-btn.dark-toggle {
+        background: var(--ink);
+      }
+      .icon-btn.history-toggle {
+        background: var(--muted);
+      }
+
+      /* O pseudoseletor :hover é ativado quando o usuário passa o mouse por cima */
+      .icon-btn:hover,
+      .update-btn:hover {
+        opacity: 0.85; /* Deixa ligeiramente transparente (efeito de hover) */
+      }
+
+      /* Caixas flutuantes de histórico e atualização (menus pop-up) */
+      .floating-box {
+        position: absolute; /* Flutua em relação ao botão pai */
+        top: 36px;
+        right: 0;
+        background: var(--paper);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        width: 320px;
+        box-shadow: 0 8px 24px rgba(27, 30, 39, 0.12);
+
+        /* Início da animação */
+        visibility: hidden;
+        opacity: 0;
+        transform: scale(0.96);
+        transform-origin: top right; /* Origem ancorada próxima ao botão no topo */
+        /* O delay na visibility garante que o elemento só suma após os 150ms da opacidade */
+        transition:
+          opacity 150ms var(--anim-ease),
+          transform 150ms var(--anim-ease),
+          visibility 0s linear 150ms;
+      }
+      /* Quando o JavaScript adiciona a classe .show, o menu aparece */
+      .floating-box.show {
+        visibility: visible;
+        opacity: 1;
+        transform: scale(1);
+        /* Ao abrir, a visibility muda instantaneamente para permitir a visão da animação */
+        transition:
+          opacity 150ms var(--anim-ease),
+          transform 150ms var(--anim-ease),
+          visibility 0s linear 0s;
+      }
+
+      .hero {
+        padding: 28px 32px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .prompt {
+        font-family: var(--mono); /* Fonte monoespaçada para simular código */
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+      .cursor {
+        display: inline-block;
+        width: 9px;
+        height: 1em;
+        background: var(--ink);
+        margin-left: 3px;
+        vertical-align: -2px;
+        /* Aqui conectamos a animação 'blink' ao elemento. Ela dura 1s e repete infinitamente */
+        animation: blink 1s steps(1) infinite;
+      }
+
+      /*
+        EXPLICAÇÃO DO KEYFRAME: blink
+        1. O que a animação faz: 'blink'
+        2. Elemento alvo: O span com a classe .cursor no título
+        3. Efeito visual: Cria a ilusão do cursor de um terminal de computador piscando.
+        4. O que representa:
+           - Em 50% do tempo (meio segundo), a opacidade se torna 0 (invisível).
+        5. O que muda: O elemento fica transparente e depois volta a ser opaco.
+        6. Como funciona: Como usamos "steps(1)" no animation, não há transição suave. Ele "pisca" imediatamente de visível para invisível.
+        7. Impacto: A animação dura 1 segundo, repete 'infinite' (infinitamente).
+      */
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .tagline {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14.5px;
+        max-width: 62ch; /* Limita a largura do texto a 62 caracteres (ch), bom para leitura */
+      }
+
+      .tabs {
+        display: flex; /* Coloca os botões de aba lado a lado */
+        border-bottom: 1px solid var(--border);
+        background: var(--canvas);
+      }
+      .tab-btn {
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 14px 22px;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px; /* Faz a borda sobrepor a linha do container .tabs */
+      }
+      .tab-btn:hover {
+        color: var(--ink);
+      }
+      /* Estilos visuais quando a aba está ativada */
+      .tab-btn.active {
+        color: var(--ink);
+        background: var(--paper);
+        border-bottom-color: var(--ink);
+      }
+
+      .panel {
+        display: none; /* Oculta todos os painéis de aba por padrão */
+        padding: 28px 32px 32px;
+      }
+      .panel.active {
+        display: block; /* O JS adicionará .active para revelar a aba certa */
+      }
+
+      .field {
+        margin-bottom: 18px;
+      }
+      .field label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      /* Estilos globais para entradas de texto e áreas de digitação */
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 15px;
+        font-family: var(--sans);
+        color: var(--ink);
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        resize: vertical; /* Permite ao usuário alterar a altura da caixa, mas não a largura */
+      }
+
+      .options-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: -8px;
+        margin-bottom: 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .options-row input[type="checkbox"] {
+        margin: 0;
+      }
+
+      .row-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap; /* Se a tela for pequena, permite que os botões quebrem para a linha de baixo */
+        margin: 14px 0 6px;
+      }
+
+      /* O CSS principal para botões da interface */
+      .btn {
+        font-family: var(--sans);
+        font-weight: 600;
+        font-size: 14px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--ink);
+        background: var(--ink);
+        color: var(--paper);
+        cursor: pointer;
+      }
+      .btn:hover {
+        opacity: 0.88;
+      }
+      /* ".ghost" cria um botão que não tem cor de fundo, apenas bordas (outline) */
+      .btn.ghost {
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--border);
+        font-weight: 500;
+      }
+      .btn.swap {
+        background: var(--even);
+        border-color: var(--even);
+        color: #fff;
+        margin-left: auto; /* Empurra este botão específico para a extrema direita no flexbox */
+      }
+      .btn.paste-btn {
+        background: var(--even);
+        border-color: var(--even);
+        color: #fff;
+      }
+      .btn.sm {
+        padding: 6px 12px;
+        font-size: 12.5px;
+      }
+
+      .words-info {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 2px 0 14px;
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        font-size: 12.5px;
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        margin-right: 6px;
+        vertical-align: 1px;
+      }
+      /* Cores marcadoras de dicas baseadas nas variáveis originais */
+      .swatch.odd {
+        background: var(--odd);
+      }
+      .swatch.even {
+        background: var(--even);
+      }
+
+      /* Elementos do "Indicador de Força da Senha/Cifra" */
+      .strength-container {
+        margin: 15px 0;
+      }
+      .strength-label {
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .strength-bar-wrap {
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden; /* Esconde qualquer cor que saia dos limites arredondados */
+      }
+      .strength-fill {
+        height: 100%;
+        width: 0%; /* Inicia com 0% e o JS atualiza esse valor conforme a complexidade */
+        background: var(--error);
+        transition:
+          width 0.4s,
+          /* A barra aumenta de tamanho de forma animada e suave */ background
+            0.4s; /* A cor transita suavemente entre vermelho e verde */
+      }
+
+      /* Linhas geradas dinamicamente pelo JavaScript para ajustar os deslocamentos */
+      .shift-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px dashed var(--border);
+        flex-wrap: wrap;
+      }
+      .row-num {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--muted);
+        width: 18px;
+        flex-shrink: 0; /* Impede que esse número seja espremido pelo Flexbox */
+      }
+      .row-word {
+        flex: 1 1 160px; /* Flexbox: Cresce, encolhe e baseia em 160px de largura */
+        min-width: 110px;
+        font-family: var(--mono);
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        word-break: break-all; /* Quebra palavras muito compridas se não couberem na tela */
+      }
+      .letter.odd {
+        color: var(--odd);
+      }
+      .letter.even {
+        color: var(--even);
+      }
+      .letter.placeholder {
+        color: var(--muted);
+        font-weight: 400;
+      }
+
+      .row-inputs {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      .shift-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .shift-field input {
+        width: 72px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 14px;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+      /* Bordas coloridas à esquerda ajudam o usuário a identificar os campos de Ímpar e Par */
+      .shift-field.odd input {
+        border-left: 3px solid var(--odd);
+      }
+      .shift-field.even input {
+        border-left: 3px solid var(--even);
+      }
+
+      .shift-field input.invalid {
+        border-color: var(--error);
+        background: var(--error-soft);
+      }
+
+      .fast-fill-wrap {
+        margin: 20px 0 16px;
+        padding: 14px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .fast-fill-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        margin: 0 0 10px;
+      }
+      .fast-fill-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+      }
+      .fast-fill-field {
+        flex: 1; /* Permite que o campo ocupe todo o espaço restante da linha */
+        min-width: 140px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .fast-fill-field input {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 14px;
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .presets-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .presets-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-right: 4px;
+      }
+
+      /* Caixa de alertas de sucesso/erro */
+      .alert {
+        padding: 12px 14px;
+        border-left: 4px solid;
+        border-radius: 6px;
+        font-size: 14px;
+        margin: 16px 0 0;
+      }
+      .alert-error {
+        background: var(--error-soft);
+        border-color: var(--error);
+        color: var(--error);
+      }
+      .alert-success {
+        background: var(--even-soft);
+        border-color: var(--even);
+        color: var(--even);
+      }
+
+      /* Área dos resultados (terminal simulado) */
+      .console-wrap {
+        margin-top: 20px;
+      }
+      .console-label {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .console {
+        background: var(--console-bg);
+        color: var(--console-text);
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .console-text {
+        font-family: var(--mono);
+        font-size: 15px;
+        word-break: break-all;
+      }
+      .copy-btn {
+        flex-shrink: 0;
+        background: transparent;
+        border: 1px solid var(--console-border);
+        color: var(--console-text);
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-family: var(--sans);
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      /* Lista do histórico */
+      .history-list {
+        list-style: none; /* Remove as bolinhas padrão de itens <li> */
+        padding: 0;
+        margin: 0;
+        font-size: 12px;
+        color: var(--ink);
+      }
+      .history-item {
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .history-item:last-child {
+        border-bottom: none; /* O último item não precisa de borda inferior */
+      }
+      .history-item strong {
+        color: var(--odd);
+        font-family: var(--mono);
+      }
+      .history-empty {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 10px;
+      }
+
+      /* Footer */
+      .footer-center {
+        text-align: center;
+        line-height: 1.4;
+      }
+
+      .app-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 800px;
+        margin: 0 auto 20px auto;
+        padding: 0 10px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+
+      /* =====================================================================
+         ANIMATION LAYER (additive) — motion only, no visual/layout changes
+         ===================================================================== */
+      :root {
+        /* Define uma transição temporal personalizada (curva bezier) para animar mais rápido no início e lento no fim */
+        --anim-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      /* Tabs: the active state fades in instead of snapping (same colours) */
+      .tab-btn {
+        transition:
+          color 0.18s ease,
+          background-color 0.18s ease,
+          border-bottom-color 0.18s ease;
+      }
+
+      /* 
+         Encoder <-> Decoder
+         Essas classes gerenciam a saída e entrada das seções na tela
+      */
+      .panel.is-entering {
+        transform-origin: top center;
+        animation: anim-panel-in 0.26s var(--anim-ease) 0.07s both;
+      }
+      .panel.is-leaving {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        pointer-events: none; /* Ignora cliques enquanto sai da tela */
+        animation: anim-panel-out 0.12s ease-out both;
+      }
+
+      /*
+        EXPLICAÇÃO DO KEYFRAME: anim-panel-in
+        1. Nome: anim-panel-in
+        2. Elemento: .panel.is-entering (o painel que está se tornando visível).
+        3. Efeito visual: Faz o novo painel surgir subindo ligeiramente e aumentando a opacidade.
+        4. Representação: 
+           - from (0%): Painel 100% invisível, levemente deslocado para baixo (8px) e um tiquinho menor (scale 0.995).
+           - to (100%): Painel totalmente visível e em sua posição original.
+        5. Mudanças: Opacidade e a propriedade 'transform' (que move e redimensiona).
+        6. Como funciona: Dá uma sensação de física "flutuante" quando o usuário clica na aba, criando um UX mais polido.
+        7. Impactos: Usa `both` no animation-fill-mode para garantir que antes e depois da animação o estilo aplicado prevaleça.
+      */
+      @keyframes anim-panel-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.995);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /*
+        EXPLICAÇÃO DO KEYFRAME: anim-panel-out
+        1. Nome: anim-panel-out
+        2. Elemento: .panel.is-leaving (o painel da aba que o usuário acabou de sair).
+        3. Efeito visual: Faz o painel antigo desaparecer "voando" para cima e ficando transparente.
+        4. Representação: 
+           - from (0%): Estado visível padrão.
+           - to (100%): Invisível (opacity: 0) e deslocado -4px (para cima).
+        5. Mudanças: Transform e opacity.
+        6. Como funciona: Ele complementa o 'anim-panel-in'. Enquanto um desce aparecendo, este sobe desaparecendo.
+        7. Impactos: Dura apenas 0.12s para garantir rapidez para o usuário.
+      */
+      @keyframes anim-panel-out {
+        from {
+          opacity: 1;
+          transform: none;
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+      }
+
+      /* Fix: o seletor [hidden] garante que o atributo padrão do HTML 'hidden' funcione à força usando !important */
+      [hidden] {
+        display: none !important;
+      }
+
+      /* "Configure shifts": mantêm o bloco visível enquanto o JavaScript o anima colapsando */
+      .cfg-leaving[hidden] {
+        display: block !important;
+      }
+      .legend.cfg-leaving[hidden] {
+        display: flex !important;
+      }
+
+      /* 
+         O 'Stagger' cria um efeito "cascata".
+         A variável inline "--i" é calculada via Javascript para cada nova linha. 
+      */
+      .shift-row.row-enter {
+        animation: anim-row-in 0.26s var(--anim-ease)
+          calc(min(var(--i, 0), 8) * 40ms) both;
+      }
+
+      /*
+        EXPLICAÇÃO DO KEYFRAME: anim-row-in
+        1. Nome: anim-row-in
+        2. Elemento: .shift-row.row-enter (cada nova linha gerada pelo botão 'Configure shifts').
+        3. Efeito visual: Faz cada linha aparecer gradativamente, vindo de baixo, com um "delay" diferente em sequência (efeito cascata).
+        4. Representação:
+           - from: Transparente (opacity: 0) e mais abaixo do normal (translateY(6px)).
+           - to: Visível e em posição normal.
+        5. Mudanças: Opacidade e translateY (movimento no eixo vertical).
+        6. Como funciona: O JS adiciona "--i" (como 1, 2, 3...) para cada linha. O CSS multiplica por 40ms, criando atrasos progressivos. A linha 1 entra rápido, a 2 entra depois de 40ms, a 3 depois de 80ms, etc.
+        7. Impactos: A matemática no 'animation-delay' cria o efeito complexo usando apenas CSS.
+      */
+      @keyframes anim-row-in {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* Validação instantânea visual com borda verde se o usuário preencheu */
+      .shift-field input {
+        transition:
+          border-color 0.2s ease,
+          background-color 0.2s ease;
+      }
+      /* Se possuir o atributo customizado 'data-filled' (gerido por JS) e não for inválido, fica verde sutil */
+      .shift-field input[data-filled]:not(.invalid) {
+        border-top-color: rgba(16, 185, 129, 0.55);
+        border-right-color: rgba(16, 185, 129, 0.55);
+        border-bottom-color: rgba(16, 185, 129, 0.55);
+        background-color: rgba(16, 185, 129, 0.1);
+        /* color-mix combina verde e a cor de fundo nativa */
+        background-color: color-mix(in srgb, var(--success) 10%, var(--canvas));
+      }
+
+      /* Transição geral de todos os botões ao serem pressionados ou sobrepostos */
+      .btn {
+        transition:
+          transform 0.12s var(--anim-ease),
+          background-color 0.12s ease,
+          border-color 0.12s ease,
+          color 0.12s ease,
+          opacity 0.12s ease;
+      }
+      /* O estado :active reflete o botão enquanto ele está sendo apertado (mouse pressionado) */
+      .btn:active {
+        transform: scale(
+          0.96
+        ); /* Diminui 4% do tamanho para simular o apertar real */
+        opacity: 1;
+        background-color: color-mix(in srgb, var(--ink) 80%, #000);
+        border-color: color-mix(in srgb, var(--ink) 80%, #000);
+        color: color-mix(in srgb, var(--paper) 88%, var(--ink));
+      }
+
+      /* Feedback de cópia: o texto quica quando copiado */
+      .console-text.copy-bounce {
+        animation: anim-copy-bounce 0.48s linear;
+      }
+
+      /*
+        EXPLICAÇÃO DO KEYFRAME: anim-copy-bounce
+        1. Nome: anim-copy-bounce
+        2. Elemento: Textos copiados na classe .console-text
+        3. Efeito visual: O texto dá um pulinho rápido para cima ("bounce") para sinalizar visualmente que a cópia funcionou.
+        4. Representação (Keyframes):
+           - 0%: Começa no lugar com função de timing para "subir rapidamente".
+           - 36%: Ponto mais alto, sobe -5px. Função altera para "cair rapidamente".
+           - 68%: Quica brevemente +1px (passa do chão e retorna).
+           - 100%: Retorna perfeitamente ao lugar original.
+        5. Mudanças: Deslocamento vertical usando "transform: translateY".
+        6. Como funciona: Alterando os 'animation-timing-function' (as curvas cubic-bezier) entre os pontos, o pulo ganha física "realista" de subida, queda livre e assentamento.
+        7. Impacto: Gera feedback visual sem necessitar que uma nova aba carregue, melhorando a interatividade.
+      */
+      @keyframes anim-copy-bounce {
+        0% {
+          transform: translateY(0);
+          animation-timing-function: cubic-bezier(
+            0.215,
+            0.61,
+            0.355,
+            1
+          ); /* subida */
+        }
+        36% {
+          transform: translateY(-5px);
+          animation-timing-function: cubic-bezier(
+            0.55,
+            0.085,
+            0.68,
+            0.53
+          ); /* queda */
+        }
+        68% {
+          transform: translateY(1px);
+          animation-timing-function: cubic-bezier(
+            0.25,
+            0.46,
+            0.45,
+            0.94
+          ); /* assentar */
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+
+      /* Regra para acessibilidade: se o usuário preferir movimentos reduzidos no OS do computador, cancelamos as animações aqui */
+      @media (prefers-reduced-motion: reduce) {
+        .tab-btn {
+          transition: none;
+        }
+        .panel.is-entering,
+        .panel.is-leaving,
+        .shift-row.row-enter,
+        .console-text.copy-bounce {
+          animation: none;
+        }
+        .shift-field input {
+          transition: none;
+        }
+        .btn {
+          transition: none;
+        }
+        .btn:active {
+          transform: none;
+        }
+        .panel.is-leaving {
+          display: none;
+        }
+        .floating-box,
+        .floating-box.show {
+          transition: none;
+        }
+      }
+
+      /* =====================================================================
+         REFINEMENT LAYER — one easing token (--anim-ease) drives CSS + WAAPI
+         ===================================================================== */
+      :root {
+        color-scheme: light;
+        --ring: color-mix(in srgb, var(--ink) 14%, transparent);
+      }
+      [data-theme="dark"] {
+        color-scheme: dark;
+      }
+      /* Critically damped spring (no overshoot) sampled as linear(); cubic-bezier remains the fallback */
+      @supports (transition-timing-function: linear(0, 1)) {
+        :root {
+          --anim-ease: linear(
+            0 0%,
+            0.037 5%,
+            0.122 10%,
+            0.228 15%,
+            0.337 20%,
+            0.537 30%,
+            0.692 40%,
+            0.801 50%,
+            0.874 60%,
+            0.922 70%,
+            0.952 80%,
+            0.971 90%,
+            1 100%
+          );
+        }
+      }
+      html {
+        scroll-padding-top: 60px;
+        -webkit-text-size-adjust: 100%;
+      }
+      button {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+      .theme-anim,
+      .theme-anim * {
+        transition:
+          background-color 0.3s ease,
+          border-color 0.3s ease,
+          color 0.3s ease !important;
+      }
+
+      .app {
+        box-shadow:
+          0 1px 2px rgba(20, 24, 32, 0.05),
+          0 12px 32px -16px rgba(20, 24, 32, 0.14);
+      }
+      [data-theme="dark"] .app {
+        box-shadow: none;
+      }
+
+      /* Typography: tight tracking on display, calm leading on body, no code ligatures in cipher text */
+      .prompt,
+      .tab-btn,
+      .console-text,
+      .row-word,
+      .row-num,
+      .shift-field input,
+      .fast-fill-field input,
+      .app-footer,
+      .icon-btn,
+      .update-btn {
+        font-variant-ligatures: none;
+      }
+      .prompt {
+        letter-spacing: -0.01em;
+        line-height: 1.25;
+      }
+      .tagline {
+        line-height: 1.55;
+        text-wrap: pretty;
+      }
+      .shift-field input,
+      .fast-fill-field input,
+      .console-text,
+      .row-num {
+        font-variant-numeric: tabular-nums;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      /* Focus + validation states */
+      :focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 2px;
+      }
+      textarea:focus-visible,
+      input:focus-visible {
+        outline: none;
+        border-color: var(--ink);
+        box-shadow: 0 0 0 3px var(--ring);
+      }
+      textarea,
+      input[type="text"],
+      .shift-field input,
+      .fast-fill-field input {
+        transition:
+          border-color 0.15s,
+          background-color 0.2s,
+          box-shadow 0.15s;
+      }
+      textarea.invalid,
+      input[type="text"].invalid {
+        border-color: var(--error);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 16%, transparent);
+      }
+      .shift-field input.invalid:focus-visible {
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 16%, transparent);
+      }
+      .btn.invalid {
+        border-color: var(--error);
+        color: var(--error);
+      }
+      .btn.needs-config {
+        border-color: var(--ink);
+      }
+      .is-stale {
+        opacity: 0.45;
+        transition: opacity 0.25s var(--anim-ease);
+      }
+
+      /* Press feedback lands on pointer-down; hit areas padded for touch */
+      .icon-btn,
+      .update-btn,
+      .copy-btn {
+        transition:
+          transform 0.1s ease-out,
+          opacity 0.15s,
+          background-color 0.15s,
+          border-color 0.15s,
+          color 0.15s;
+      }
+      .icon-btn:active,
+      .update-btn:active,
+      .copy-btn:active {
+        transform: scale(0.94);
+      }
+      .icon-btn,
+      .update-btn {
+        position: relative;
+      }
+      .icon-btn::after,
+      .update-btn::after {
+        content: "";
+        position: absolute;
+        inset: -9px -4px;
+      }
+      .copy-btn {
+        min-width: 72px;
+        text-align: center;
+      }
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .copy-btn.is-done {
+        border-color: #5fd3bf;
+        color: #5fd3bf;
+      }
+      .console {
+        border: 1px solid var(--console-border);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+
+      /* Tabs: a single indicator glides between tabs; bar floats over content as a light material */
+      .tabs {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: color-mix(in srgb, var(--canvas) 84%, transparent);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        backdrop-filter: blur(14px) saturate(160%);
+      }
+      .tab-btn.active {
+        border-bottom-color: transparent;
+      }
+      .tab-btn:focus-visible {
+        outline-offset: -4px;
+      }
+      .tab-indicator {
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        width: 1px;
+        height: 2px;
+        background: var(--ink);
+        transform-origin: 0 0;
+        transition: transform 0.45s var(--anim-ease);
+        pointer-events: none;
+      }
+
+      /* Popovers: anchored to their trigger, materialize with blur + scale */
+      .floating-box {
+        top: calc(100% + 8px);
+        right: 0;
+        width: min(320px, calc(100vw - 32px));
+        background: color-mix(in srgb, var(--paper) 86%, transparent);
+        -webkit-backdrop-filter: blur(0);
+        backdrop-filter: blur(0);
+        transform: scale(0.94);
+        transform-origin: 90% 0;
+        box-shadow: 0 12px 32px -8px rgba(20, 24, 32, 0.2);
+        transition:
+          opacity 0.18s var(--anim-ease),
+          transform 0.3s var(--anim-ease),
+          backdrop-filter 0.3s ease,
+          -webkit-backdrop-filter 0.3s ease,
+          visibility 0s linear 0.3s;
+      }
+      .floating-box.show {
+        transform: scale(1);
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+        backdrop-filter: blur(16px) saturate(160%);
+        transition:
+          opacity 0.18s var(--anim-ease),
+          transform 0.3s var(--anim-ease),
+          backdrop-filter 0.3s ease,
+          -webkit-backdrop-filter 0.3s ease,
+          visibility 0s;
+      }
+
+      @media (max-width: 600px) {
+        .app {
+          margin: 12px;
+        }
+        .hero {
+          padding: 60px 18px 16px;
+        }
+        .panel {
+          padding: 20px 16px 24px;
+        }
+        .prompt {
+          font-size: 18px;
+        }
+        .tab-btn {
+          flex: 1;
+          padding: 14px 8px;
+        }
+        .btn.swap {
+          margin-left: 0;
+          flex: 1 1 100%;
+        }
+        .app-footer {
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+          margin-bottom: 16px;
+        }
+      }
+      @media (hover: none) {
+        .btn:hover,
+        .icon-btn:hover,
+        .update-btn:hover {
+          opacity: 1;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .tab-indicator,
+        .is-stale,
+        .copy-btn,
+        .icon-btn,
+        .update-btn {
+          transition: none;
+        }
+        .icon-btn:active,
+        .update-btn:active,
+        .copy-btn:active {
+          transform: none;
+        }
+        .cursor {
+          animation: none;
+        }
+        .theme-anim,
+        .theme-anim * {
+          transition: none !important;
+        }
+      }
+      @media (prefers-reduced-transparency: reduce) {
+        .tabs {
+          background: var(--canvas);
+          -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+        }
+        .floating-box,
+        .floating-box.show {
+          background: var(--paper);
+          -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+        }
+      }
+      @media (prefers-contrast: more) {
+        :root {
+          --border: color-mix(in srgb, var(--ink) 45%, transparent);
+        }
+        .floating-box {
+          border-color: var(--ink);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      ==================================
+      HTML DOCUMENTATION
+      ==================================
+      The <body> tag contains all the elements visible to the user.
+    -->
+    <div class="app">
+      <!-- TOP CONTROLS (History and Theme buttons) -->
+      <div class="top-controls">
+        <!-- 
+          The <button> tag is a natively interactive element.
+          The browser knows this button can be focused with the "Tab" key (Accessibility)
+          and that pressing "Enter" triggers a click. JS will intercept that click.
+        -->
+        <button
+          id="historyBtn"
+          class="icon-btn history-toggle"
+          title="History"
+          aria-label="Recent history"
+          aria-expanded="false"
+        >
+          ⏱
+        </button>
+        <button
+          id="themeBtn"
+          class="icon-btn dark-toggle"
+          title="Switch theme"
+          aria-label="Switch theme"
+        >
+          🌙
+        </button>
+        <!-- A container to keep the update box anchored to the v1.10.1 button -->
+        <div style="display: contents">
+          <button
+            id="updateLogBtn"
+            class="update-btn"
+            aria-label="Version notes"
+            aria-expanded="false"
+          >
+            v1.10.1
+          </button>
+
+          <!-- The history and update notes are hidden by default and use the 'floating-box' class -->
+          <div id="updateLogBox" class="floating-box">
+            <!-- The <h3> tag represents a level-3 heading. -->
+            <h3 style="margin: 0; font-family: var(--mono); font-size: 14px">
+              UPDATE V1.10.1
+            </h3>
+            <!-- The <hr> tag creates a horizontal line to visually separate content -->
+            <hr
+              style="
+                border: 0;
+                border-top: 1px dashed var(--border);
+                margin: 10px 0;
+              "
+            />
+            <p
+              style="
+                margin: 8px 0 0 0;
+                font-size: 12px;
+                color: var(--muted);
+                line-height: 1.4;
+              "
+            >
+              • <strong>Keyboard Navigation:</strong> Switch tabs with the Arrow
+              keys, Home and End, and move through the shift fields with the
+              Enter key.<br />
+              • <strong>Smart Auto-focus:</strong> Opening a panel automatically
+              moves focus to the first field.<br />
+              • <strong>Smooth Animations (WAAPI):</strong> Improved transitions
+              with physics-based spring damping curves for tabs and modals.<br />
+              • <strong>Dynamic Indicator:</strong> High-precision tab marker
+              positioning.<br />
+              • <strong>Accessibility &amp; Contrast:</strong> Improved support
+              for <i>prefers-reduced-transparency</i> and
+              <i>prefers-contrast</i>.<br />
+              • <strong>Form Validation:</strong> Error messages now clear
+              automatically as you type.
+            </p>
+          </div>
+        </div>
+
+        <!-- HISTORY BOX: A box identical to the updates one, but it renders the log dynamically with JavaScript -->
+        <div id="historyBox" class="floating-box">
+          <h3
+            style="
+              margin: 0 0 10px 0;
+              font-family: var(--mono);
+              font-size: 14px;
+            "
+          >
+            Recent History
+          </h3>
+          <ul id="historyList" class="history-list">
+            <li class="history-empty">No recent operations.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Hero Banner (Visual Introduction) -->
+      <div class="hero">
+        <p class="prompt">$ cipher --odd-even<span class="cursor"></span></p>
+        <p class="tagline">
+          Encode and decode phrases with Caesar cipher applied separately to odd
+          and even position letters of each word.
+        </p>
+      </div>
+
+      <!-- 
+        The TABS.
+        ARIA attributes (role="tablist" and role="tab") tell screen-reader software
+        (for visually impaired users) that this structure works as tabs, not just random buttons.
+        "data-tab" is a custom attribute. JavaScript reads it to know which tab to activate.
+      -->
+      <div class="tabs" role="tablist">
+        <button
+          class="tab-btn active"
+          role="tab"
+          data-tab="encode"
+          id="tab-encode"
+        >
+          encode.js
+        </button>
+        <button class="tab-btn" role="tab" data-tab="decode" id="tab-decode">
+          decode.js
+        </button>
+      </div>
+
+      <!-- ===================== PANEL: ENCODER ===================== -->
+      <!-- The <section> tag divides page content into blocks for better HTML semantics -->
+      <section class="panel active" id="panel-encode" role="tabpanel">
+        <div class="field">
+          <!-- A tag <label> associa um texto a um elemento interativo usando o atributo "for" combinando com o "id" -->
+          <label for="encPhrase">Original phrase</label>
+          <!-- The <textarea> tag allows long (multi-line) text input from the user -->
+          <textarea
+            id="encPhrase"
+            rows="2"
+            placeholder="Ex.: Stuck in the rooms"
+          ></textarea>
+        </div>
+        <div class="options-row">
+          <!-- Interactive checkbox element that allows binary (yes/no) choices -->
+          <input type="checkbox" id="encKeepSpecial" />
+          <label for="encKeepSpecial" style="margin: 0; font-size: 13px"
+            >Preserve special characters and accents (A-Z/a-z will be ciphered,
+            the rest stays intact)</label
+          >
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="encConfigBtn">
+            Configure shifts
+          </button>
+          <button type="button" class="btn ghost" id="encClearBtn">
+            Clear
+          </button>
+        </div>
+
+        <!-- Boolean HTML attributes like 'hidden' hide the element. JS removes them to show it. -->
+        <p class="words-info" id="encWordsInfo" hidden></p>
+        <p class="legend" id="encLegend" hidden>
+          <span
+            ><span class="swatch odd"></span>odd position (1st, 3rd...)</span
+          >
+          <span
+            ><span class="swatch even"></span>even position (2nd, 4th...)</span
+          >
+        </p>
+
+        <!-- STRENGTH INDICATOR: A visual graphic built through DOM manipulation. -->
+        <div class="strength-container" id="encStrengthContainer" hidden>
+          <div class="strength-label">
+            <span>Cipher Strength</span>
+            <!-- A tag <span> serve para agrupar parte de texto sem quebrar linha. -->
+            <span id="encStrengthText">Weak</span>
+          </div>
+          <div class="strength-bar-wrap">
+            <div id="encStrengthBar" class="strength-fill"></div>
+          </div>
+        </div>
+
+        <!-- This div starts empty. JavaScript fills it (innerHTML) with full rows based on the text. -->
+        <div id="encShiftsContainer" data-word-count="0"></div>
+
+        <div class="fast-fill-wrap" id="encFastFill" hidden>
+          <p class="fast-fill-title">Quick Fill / Advanced Patterns</p>
+          <div class="fast-fill-row">
+            <label class="fast-fill-field odd">
+              <span>Odd Pattern (Ex: 2 or 1,4)</span>
+              <!-- input[type="text"] is a single-line field for general typing. -->
+              <input
+                type="text"
+                id="encFastOdd"
+                placeholder="Ex: 2"
+                autocomplete="off"
+              />
+            </label>
+            <label class="fast-fill-field even">
+              <span>Even Pattern (Ex: 5 or 3,2)</span>
+              <input
+                type="text"
+                id="encFastEven"
+                placeholder="Ex: 5"
+                autocomplete="off"
+              />
+            </label>
+            <button type="button" class="btn" id="encFastApplyBtn">
+              Apply
+            </button>
+            <button
+              type="button"
+              class="btn ghost"
+              id="encRandomBtn"
+              title="Random shifts"
+              style="padding: 10px 14px"
+            >
+              🎲
+            </button>
+            <button
+              type="button"
+              class="btn ghost"
+              id="encResetBtn"
+              title="Reset all shifts to 0"
+            >
+              Reset Shifts
+            </button>
+          </div>
+          <div class="presets-row">
+            <span class="presets-label">Presets:</span>
+            <button type="button" class="btn ghost sm" id="presetRot13">
+              ROT13
+            </button>
+            <button type="button" class="btn ghost sm" id="presetFibonacci">
+              Fibonacci
+            </button>
+            <button type="button" class="btn ghost sm" id="presetProgressive">
+              Progressive (+1,+2)
+            </button>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn" id="encSubmitBtn">Encode</button>
+          <button type="button" class="btn swap" id="swapBtn" hidden>
+            Transfer to Decoder ⇄
+          </button>
+        </div>
+
+        <div
+          id="encAlert"
+          class="alert"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+
+        <div class="console-wrap" id="encResultWrap" hidden>
+          <p class="console-label">// encoded result</p>
+          <div class="console">
+            <span class="console-text" id="encResult"></span>
+            <button type="button" class="copy-btn" id="encCopyBtn">copy</button>
+          </div>
+          <p class="console-label" style="margin-top: 18px">// word lengths</p>
+          <div class="console">
+            <span class="console-text" id="encSizes"></span>
+            <button type="button" class="copy-btn" id="encSizesCopyBtn">
+              copy
+            </button>
+          </div>
+          <p class="console-label" style="margin-top: 18px">
+            // shifts used (odd, even)
+          </p>
+          <div class="console">
+            <span class="console-text" id="encShiftsResult"></span>
+            <button type="button" class="copy-btn" id="encShiftsCopyBtn">
+              copy
+            </button>
+          </div>
+
+          <div style="margin-top: 20px">
+            <button
+              type="button"
+              class="btn"
+              id="encCopyAllBtn"
+              style="width: 100%; border-radius: 8px"
+            >
+              Copy All Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PANEL: DECODER ===================== -->
+      <section class="panel" id="panel-decode" role="tabpanel">
+        <div class="row-actions" style="margin-bottom: 18px; margin-top: 0">
+          <button type="button" class="btn paste-btn" id="decPasteAllBtn">
+            Paste Data 📋
+          </button>
+        </div>
+
+        <div class="field">
+          <label for="decMessage">Encoded message</label>
+          <textarea
+            id="decMessage"
+            rows="2"
+            placeholder="Ex.: Fscxsvyvhnubtxy"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="decSizes"
+            >Original word lengths (separated by commas)</label
+          >
+          <input type="text" id="decSizes" placeholder="Ex.: 5, 2, 3, 5" />
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="decConfigBtn">
+            Configure shifts
+          </button>
+          <button type="button" class="btn ghost" id="decClearBtn">
+            Clear
+          </button>
+        </div>
+
+        <p class="words-info" id="decWordsInfo" hidden></p>
+
+        <div id="decShiftsContainer" data-word-count="0"></div>
+
+        <div class="row-actions">
+          <button type="button" class="btn" id="decSubmitBtn">Decode</button>
+        </div>
+
+        <div
+          id="decAlert"
+          class="alert"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+
+        <div class="console-wrap" id="decResultWrap" hidden>
+          <p class="console-label">// original phrase</p>
+          <div class="console">
+            <span class="console-text" id="decResult"></span>
+            <button type="button" class="copy-btn" id="decCopyBtn">copy</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- === FOOTER === -->
+    <!-- The <footer> tag is semantically used for footers. It does not change the look, but improves SEO and structure. -->
+    <footer class="app-footer">
+      <span class="footer-left">Odd/Even Cipher v1.10.1</span>
+      <span class="footer-center">"Aqui é o Brasil"<br />—Dominic Toretto</span>
+      <span class="footer-right">Doppelsoldner-Web</span>
+    </footer>
+
+    <!--
+    // ==================================
+    // JAVASCRIPT LOGIC
+    // ==================================
+    The <script> tag holds all the code that brings the page to life. 
+    It reads user events, runs the cipher math and changes the HTML tags.
+    -->
+    <script>
+      /* =========================================================================
+         STATE & CONFIG
+         ========================================================================= */
+      /* 
+         'let' cria uma variável que pode ter o valor alterado no futuro.
+         localStorage permite guardar coisas permanentemente no navegador.
+         JSON.parse converte um texto em formato JSON salvo de volta para um Array utilizável.
+      */
+      let historyData = (() => {
+        try {
+          const v = JSON.parse(localStorage.getItem("cipherHistory"));
+          return Array.isArray(v) ? v : [];
+        } catch {
+          return [];
+        }
+      })();
+
+      /* 'const' cria uma constante cujo valor não vai mudar. (Máximo de itens do histórico) */
+      const MAX_HISTORY = 5;
+
+      /*
+         Gestão de Temas (light, dark)
+         document.getElementById procura o elemento na página que tenha aquele exato "id" configurado no HTML, e o salva na variável const.
+      */
+      const themeBtn = document.getElementById("themeBtn");
+
+      /* Array (lista/vetor) com opções de temas. */
+      const themes = ["light", "dark"];
+
+      /* 
+         Tenta puxar o tema salvo. Se for vazio/nulo, vira "light" pela condicional OR (||). 
+      */
+      let currentTheme = localStorage.getItem("cipherTheme") || "light";
+
+      /* O if garante a integridade dos dados impedindo valores não esperados. */
+      if (!themes.includes(currentTheme)) currentTheme = "light"; // Evita bug caso o usuário já tenha "beach" salvo
+
+      /* Manipulação de DOM: Insere no HTML principal o modo detectado. */
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateThemeIcon(currentTheme);
+
+      /*
+         Função de alterar botão
+         Propósito: Altera o texto visual do botão do tema.
+         Parâmetros: 'theme' guarda o texto "light" ou "dark".
+      */
+      function updateThemeIcon(theme) {
+        if (theme === "light") {
+          themeBtn.textContent = "🌙";
+          themeBtn.title = "Switch to dark mode";
+          themeBtn.setAttribute("aria-label", themeBtn.title);
+        } else {
+          themeBtn.textContent = "☀️️";
+          themeBtn.title = "Switch to light mode";
+          themeBtn.setAttribute("aria-label", themeBtn.title);
+        }
+      }
+
+      /* 
+         FLUXO DE INTERAÇÃO DO TEMA:
+         1. Usuário clica no botão com a Lua/Sol.
+         2. addEventListener captura o evento 'click' e executa uma "arrow function" (=>).
+         3. A função descobre qual o tema atual do array através do índice (indexOf).
+         4. Através de matemática modular (%), define o próximo índice (0 ou 1).
+         5. Aplica a mudança no documento HTML mudando a string do "data-theme".
+         6. O navegador vê a mudança, aciona o seletor CSS [data-theme="dark"] e altera as Variáveis CSS.
+      */
+      themeBtn.addEventListener("click", () => {
+        const currentIndex = themes.indexOf(currentTheme);
+        const nextIndex = (currentIndex + 1) % themes.length;
+        currentTheme = themes[nextIndex];
+        document.documentElement.classList.add("theme-anim");
+        clearTimeout(window._themeT);
+        window._themeT = setTimeout(
+          () => document.documentElement.classList.remove("theme-anim"),
+          360,
+        );
+
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        localStorage.setItem("cipherTheme", currentTheme);
+        updateThemeIcon(currentTheme);
+      });
+
+      /* =========================================================================
+         CIPHER LOGIC (ALGORITMO DA CIFRA)
+         ========================================================================= */
+
+      /* 
+         Nome: normalizeText
+         Propósito: Sanitizar (limpar) o texto do usuário se for pedido.
+         O que faz: Remove acentos usando manipulação Unicode e Regex (expressão regular), tirando também números e símbolos.
+      */
+      function normalizeText(text, keepSpecial) {
+        if (keepSpecial) return text;
+        return text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-zA-Z\s]/g, "");
+      }
+
+      /* 
+         Nome: splitWords
+         Propósito: Divide uma frase inteira num Array de palavras.
+         O que faz: trim() corta espaços vazios nas bordas. split(/\s+/) quebra sempre que achar espaços (1 ou mais). filter remove posições vazias acidentais.
+      */
+      function splitWords(phrase, keepSpecial) {
+        return normalizeText(phrase, keepSpecial)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+      }
+
+      /*
+         Nome: processLetter
+         Propósito: Aplica a matemática criptográfica do estilo Cifra de César a uma única letra.
+         O que faz passo a passo:
+         1. Verifica se a letra é maiúscula ou minúscula (baseando em código ASCII, onde A=65 e a=97).
+         2. Extrai o "código original" (ex: A vira 0, B vira 1).
+         3. Aplica o 'shift' matemático (positivo ou negativo se reverse for verdadeiro).
+         4. A magia do "% 26" faz com que o alfabeto circule perfeitamente (passou do 'z', volta ao 'a').
+         5. O String.fromCharCode transforma o número puro novamente em letra e retorna.
+      */
+      function processLetter(char, shift, reverse = false) {
+        const isUpper = char >= "A" && char <= "Z";
+        const isLower = char >= "a" && char <= "z";
+        if (!isUpper && !isLower) return char;
+
+        const base = isUpper ? 65 : 97;
+        const originalCode = char.charCodeAt(0) - base;
+        const effect = reverse ? -shift : shift;
+        const resultCode = (((originalCode + effect) % 26) + 26) % 26;
+        return String.fromCharCode(resultCode + base);
+      }
+
+      /*
+         LÓGICA PRINCIPAL DO PROJETO - CIFRA COM DESLOCAMENTOS INDIVIDUAIS:
+         Essa função cifra o texto completo.
+         O "shift" é o deslocamento (quantas casas no alfabeto a letra anda). 
+         A regra central da ideia deste arquivo HTML é aplicar um shift X para as letras em posição Ímpar, e um shift Y para letras Par de uma palavra específica.
+      */
+      function customCipher(phrase, shifts, keepSpecial) {
+        const words = splitWords(phrase, keepSpecial);
+
+        // Mapeia todas as palavras. Para cada palavra, gera a palavra cifrada.
+        const cipheredWords = words.map((word, idx) => {
+          // Destructuring de Array: extrai os valores dentro do array shifts de posição correspondente (idx)
+          const [oddShift, evenShift] = shifts[idx];
+          let validLetterCount = 0;
+          return word
+            .split("")
+            .map((char) => {
+              const isLetter =
+                (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
+              if (isLetter) validLetterCount++;
+              // Determina com aritmética de módulo (%) se o caractere atual lido recai em um índice de validLetter ímpar
+              const isOdd = validLetterCount % 2 !== 0;
+              const shiftVal = isOdd ? oddShift : evenShift;
+              return processLetter(char, shiftVal);
+            })
+            .join(""); // Une as letras daquela palavra novamente
+        });
+
+        // Esta parte junta as palavras respeitando os espaços originais caso se quisesse, mas
+        // ela intercala elas em um bloco contínuo visual dependendo da versão original do script.
+        const maxLength = Math.max(...cipheredWords.map((p) => p.length));
+        let result = "";
+        for (let pos = 0; pos < maxLength; pos++) {
+          for (const word of cipheredWords) {
+            if (pos < word.length) result += word[pos];
+          }
+        }
+        return result;
+      }
+
+      /*
+         Decodificador - Faz as engrenagens andarem para trás recuperando a estrutura original.
+         Precisa saber qual era o tamanho de cada palavra "Lengths" e quais deslocamentos foram usados para separar
+         aquele blocão de texto contínuo novamente em palavras distintas.
+      */
+      function customDecipher(cipheredString, shifts, lengths) {
+        // Inicializa o array de resultados com strings em branco
+        const cipheredWords = lengths.map(() => "");
+        let cursor = 0;
+        const maxLength = Math.max(...lengths);
+
+        // Desentrelaça as letras
+        for (let pos = 0; pos < maxLength; pos++) {
+          for (let i = 0; i < lengths.length; i++) {
+            if (pos < lengths[i]) {
+              cipheredWords[i] += cipheredString[cursor];
+              cursor++;
+            }
+          }
+        }
+
+        const originalWords = cipheredWords.map((word, idx) => {
+          const [oddShift, evenShift] = shifts[idx];
+          let validLetterCount = 0;
+          return word
+            .split("")
+            .map((char) => {
+              const isLetter =
+                (char >= "A" && char <= "Z") || (char >= "a" && char <= "z");
+              if (isLetter) validLetterCount++;
+              const isOdd = validLetterCount % 2 !== 0;
+              const shiftVal = isOdd ? oddShift : evenShift;
+              // processLetter envia 'true' ao final para indicar reversão (-shift)
+              return processLetter(char, shiftVal, true);
+            })
+            .join("");
+        });
+        return originalWords.join(" ");
+      }
+
+      /* =========================================================================
+         HISTORY
+         ========================================================================= */
+
+      /*
+         Propósito: Montar o código HTML para renderizar os itens salvos do histórico do usuário na telinha de menu.
+         O "innerHTML" pega um texto em String e faz o navegador tratá-lo como se fosse código HTML inserido diretamente no DOM.
+      */
+      function renderHistory() {
+        const list = document.getElementById("historyList");
+        list.innerHTML = "";
+        if (historyData.length === 0) {
+          list.innerHTML = `<li class="history-empty">No recent operations.</li>`;
+          return;
+        }
+        historyData.forEach((item) => {
+          const li = document.createElement("li"); // Cria a tag dinamicamente com JS
+          li.className = "history-item";
+          // Utiliza 'Template Literals' (crases) para injetar variáveis dentro do texto dinamicamente usando ${}.
+          // O '.substring' corta o texto para prevenir histórico enorme ocupando espaço.
+          const a = document.createElement("span"),
+            s = document.createElement("strong");
+          s.textContent = item.type + ":";
+          a.append(s, " " + String(item.input).substring(0, 20) + "...");
+          const b = document.createElement("span");
+          b.style.color = "var(--muted)";
+          b.textContent =
+            "Res: " + String(item.output).substring(0, 20) + "...";
+          li.append(a, b);
+          list.appendChild(li); // Adiciona de fato na página
+        });
+      }
+
+      /* Função que empurra uma nova operação no histórico (unshift coloca no topo da Array). */
+      function addHistory(type, input, output) {
+        historyData.unshift({ type, input, output });
+        if (historyData.length > MAX_HISTORY) historyData.pop(); // Remove o mais velho se exceder limite
+        // Converte pra String para o localStorage conseguir suportar
+        localStorage.setItem("cipherHistory", JSON.stringify(historyData));
+        renderHistory();
+      }
+      renderHistory(); // Roda a renderização assim que o script inicializar a primeira vez.
+
+      /* =========================================================================
+         UI HELPERS & COPY FUNCTIONALITY
+         ========================================================================= */
+
+      /* 
+         Proteção fundamental contra injeção de código (XSS). 
+         Transforma símbolos em 'entidades de HTML', assim se o usuário tentar digitar código na cifra, ele aparece quebrado em texto em vez de invadir a página. 
+      */
+      function escapeHtml(str) {
+        return str.replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+
+      /* Manipulação de classes CSS para apresentar caixas vermelhas (erros) ou verdes (sucessos). */
+      const MOTION = {
+        reduced: () => matchMedia("(prefers-reduced-motion: reduce)").matches,
+        ease: () =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--anim-ease")
+            .trim() || "ease-out",
+      };
+      /* Marks fields invalid (visual + aria) and focuses the first one in document order. */
+      function flagInvalid(target) {
+        const list = (Array.isArray(target) ? target : [target])
+          .filter(Boolean)
+          .sort((a, b) => (a.compareDocumentPosition(b) & 4 ? -1 : 1));
+        list.forEach((el) => {
+          el.classList.add("invalid");
+          el.setAttribute("aria-invalid", "true");
+        });
+        if (list[0]) list[0].focus();
+      }
+      /* "empty" = any blank shift; "range" = not a whole number 0-25; null = all good. */
+      function checkShifts(odd, even) {
+        const all = [...odd, ...even];
+        const empty = all.filter((i) => i.value.trim() === "");
+        if (empty.length) {
+          flagInvalid(empty);
+          return "empty";
+        }
+        const bad = all.filter(
+          (i) => !/^\d+$/.test(i.value.trim()) || Number(i.value) > 25,
+        );
+        if (bad.length) {
+          flagInvalid(bad);
+          return "range";
+        }
+        return null;
+      }
+      function showAlert(el, type, msg, field) {
+        el.className = "alert alert-" + type;
+        el.textContent = msg;
+        el.hidden = false;
+        if (!MOTION.reduced())
+          el.animate(
+            [
+              { opacity: 0, transform: "translateY(-4px)" },
+              { opacity: 1, transform: "none" },
+            ],
+            { duration: 260, easing: MOTION.ease() },
+          );
+        if (type === "error" && field) flagInvalid(field);
+      }
+      function clearAlert(el) {
+        el.hidden = true;
+        el.textContent = "";
+      }
+
+      /* Utiliza as novas "Web APIs" do navegador para ler/gravar na área de transferência (teclado). O retorno é assíncrono (Promise). */
+      const copyTimers = new WeakMap();
+      function copyToClipboard(text, btnEl) {
+        if (!text) return;
+        const done = (ok) => {
+          btnEl.dataset.label ||= btnEl.textContent;
+          btnEl.textContent = ok ? "copied!" : "copy failed";
+          btnEl.classList.toggle("is-done", ok);
+          clearTimeout(copyTimers.get(btnEl));
+          copyTimers.set(
+            btnEl,
+            setTimeout(() => {
+              btnEl.textContent = btnEl.dataset.label;
+              btnEl.classList.remove("is-done");
+            }, 1500),
+          );
+        };
+        (navigator.clipboard
+          ? navigator.clipboard.writeText(text)
+          : Promise.reject()
+        ).then(
+          () => done(true),
+          () => done(false),
+        );
+      }
+
+      /*
+         Controlador do Quique visual do Feedback CSS.
+         Ele força o elemento a "esquecer" da classe copy-bounce, 
+         dispara um 'reflow' com offsetWidth e readiciona. Isso reinicia o keyframe.
+      */
+      function bounceText(id) {
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const el = document.getElementById(id);
+        el.classList.remove("copy-bounce");
+        void el.offsetWidth;
+        el.classList.add("copy-bounce");
+      }
+
+      ["animationend", "animationcancel"].forEach((type) =>
+        document.addEventListener(type, (e) => {
+          const el = e.target;
+          if (!el.classList.contains("copy-bounce")) return;
+          const running = el
+            .getAnimations()
+            .some((a) => a.animationName === "anim-copy-bounce");
+          if (!running) el.classList.remove("copy-bounce");
+        }),
+      );
+
+      /* =========================================================================
+         EVENTOS DE CÓPIA DO USUÁRIO
+         Onde conectamos a Interface HTML ao Javascript.
+         Exemplo de fluxo de Interação: 
+         1. Usuário clica botão. -> 2. Event listener "click". -> 3. Anima bounce e chama API de Cópia da área de transferência (clipboard).
+         ========================================================================= */
+      document.getElementById("encCopyBtn").addEventListener("click", (e) => {
+        bounceText("encResult");
+        copyToClipboard(
+          document.getElementById("encResult").textContent,
+          e.target,
+        );
+      });
+      document
+        .getElementById("encSizesCopyBtn")
+        .addEventListener("click", (e) => {
+          bounceText("encSizes");
+          copyToClipboard(
+            document.getElementById("encSizes").textContent,
+            e.target,
+          );
+        });
+      document
+        .getElementById("encShiftsCopyBtn")
+        .addEventListener("click", (e) => {
+          bounceText("encShiftsResult");
+          copyToClipboard(
+            document.getElementById("encShiftsResult").textContent,
+            e.target,
+          );
+        });
+      document.getElementById("decCopyBtn").addEventListener("click", (e) => {
+        bounceText("decResult");
+        copyToClipboard(
+          document.getElementById("decResult").textContent,
+          e.target,
+        );
+      });
+
+      /* Fills the decoder shift inputs from [[odd, even], ...] pairs.
+         onlyEmpty = true only touches blank inputs (used for the post-animation re-check).
+         Returns how many inputs were filled or confirmed. */
+      function applyDecoderShifts(pairs, onlyEmpty) {
+        const oddInputs = document.querySelectorAll(".dec-odd");
+        const evenInputs = document.querySelectorAll(".dec-even");
+        let count = 0;
+        pairs.forEach(([o, e], idx) => {
+          [
+            [oddInputs[idx], o],
+            [evenInputs[idx], e],
+          ].forEach(([input, val]) => {
+            if (!input) return;
+            if (!onlyEmpty || input.value === "") input.value = String(val);
+            input.toggleAttribute("data-filled", Number(input.value) > 0);
+            count++;
+          });
+        });
+        return count;
+      }
+
+      // Copy All button (builds the formatted payload by joining strings).
+      document
+        .getElementById("encCopyAllBtn")
+        .addEventListener("click", (e) => {
+          const msg = document.getElementById("encResult").textContent;
+          const sizes = document.getElementById("encSizes").textContent;
+          const shifts = document.getElementById("encShiftsResult").textContent;
+
+          const payload = `Message: ${msg}\nLengths: ${sizes}\nShifts: ${shifts}`;
+          copyToClipboard(payload, e.target);
+        });
+
+      // Paste All button (uses "async/await" because the Clipboard API does not answer immediately, and "try/catch" because the browser may deny clipboard-read permission.)
+      document
+        .getElementById("decPasteAllBtn")
+        .addEventListener("click", async () => {
+          try {
+            const text = await navigator.clipboard.readText();
+
+            // Regular expressions that look for "Message: ..." style patterns in the pasted text
+            const msgMatch = text.match(/Message:\s*(.+)/i);
+            const lenMatch = text.match(/Lengths:\s*(.+)/i);
+            const shfMatch = text.match(/Shifts:\s*(.+)/i);
+
+            if (!msgMatch && !lenMatch && !shfMatch) {
+              showAlert(
+                document.getElementById("decAlert"),
+                "error",
+                "No valid cipher data found in clipboard.",
+              );
+              return;
+            }
+
+            // Update the form inputs (.value) when the data exists
+            if (msgMatch)
+              document.getElementById("decMessage").value = msgMatch[1].trim();
+            if (lenMatch)
+              document.getElementById("decSizes").value = lenMatch[1].trim();
+
+            // Parse the "[odd, even]" shift pairs (clamped to the 0-25 range)
+            const shiftPairs = shfMatch
+              ? [...shfMatch[1].matchAll(/\[\s*(\d+)\s*,\s*(\d+)\s*\]/g)].map(
+                  (m) => [Math.min(25, +m[1]), Math.min(25, +m[2])],
+                )
+              : [];
+
+            // Hand the shifts to the Configure handler so the rows are built pre-filled
+            pendingDecShifts = shiftPairs.length ? shiftPairs : null;
+
+            if (msgMatch && lenMatch) {
+              clearAlert(document.getElementById("decAlert"));
+              document.getElementById("decConfigBtn").click();
+              pendingDecShifts = null;
+              if (
+                document
+                  .getElementById("decAlert")
+                  .classList.contains("alert-error")
+              )
+                return;
+            }
+
+            if (shiftPairs.length) {
+              // Apply now, then double-check once the row animation has settled
+              const applied = applyDecoderShifts(shiftPairs, false);
+              setTimeout(() => applyDecoderShifts(shiftPairs, true), 450);
+              if (!applied) {
+                showAlert(
+                  document.getElementById("decAlert"),
+                  "error",
+                  "Shifts found, but no fields to fill. Paste the message and lengths too.",
+                );
+                return;
+              }
+            }
+
+            showAlert(
+              document.getElementById("decAlert"),
+              "success",
+              "Data pasted and configured automatically!",
+            );
+          } catch (err) {
+            showAlert(
+              document.getElementById("decAlert"),
+              "error",
+              "Failed to read clipboard. Please check permissions.",
+            );
+          }
+        });
+
+      /* =========================================================================
+         SHIFT INPUT VALIDATION & SMART AUTO-ADVANCE
+         Permite um fluxo avançado de teclado.
+         ========================================================================= */
+      function setupShiftInputsContainer(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // Ao pressionar tecla (keydown), prevem 'e', '-', '+' (pois inputs tipo Number permitem isso, mas só queremos dígitos limpos de 0 a 25)
+        container.addEventListener("keydown", (e) => {
+          if (e.target.matches("input[type='number']")) {
+            if (["e", "E", "+", "-", "."].includes(e.key)) {
+              e.preventDefault(); // Impede o navegador de escrever a tecla
+              return;
+            }
+            // Se apertou Enter, passa pro próximo.
+            if (e.key === "Enter") {
+              e.preventDefault();
+              focusNextInput(e.target, container);
+            }
+          }
+        });
+
+        // Quando houver mudança (input): se o número passar de 25, força ele a virar 25.
+        container.addEventListener("input", (e) => {
+          const input = e.target;
+          if (input.matches("input[type='number']")) {
+            let val = input.value.replace(/\D/g, "");
+            if (val !== "") {
+              let num = parseInt(val, 10);
+              if (num > 25) num = 25;
+              input.value = num;
+            }
+
+            evaluateStrength();
+
+            // Pula caixa automática se a pessoa preencheu 2 dígitos
+            if (input.value.length >= 2) {
+              focusNextInput(input, container);
+            }
+          }
+        });
+      }
+
+      function focusNextInput(currentInput, container) {
+        // Encontra tudo e transforma as nodeLists (listas do DOM) em Arrays nativos de JavaScript.
+        const inputs = Array.from(
+          container.querySelectorAll("input[type='number']"),
+        );
+        const index = inputs.indexOf(currentInput);
+        if (index >= 0 && index < inputs.length - 1) {
+          inputs[index + 1].focus(); // Foco move cursor de escrita pra lá
+          inputs[index + 1].select(); // Seleciona texto existente
+        }
+      }
+
+      setupShiftInputsContainer("encShiftsContainer");
+      setupShiftInputsContainer("decShiftsContainer");
+
+      /* =========================================================================
+         STRENGTH CALCULATOR
+         Avalia matematicamente quão segura está sua codificação.
+         ========================================================================= */
+      function evaluateStrength() {
+        const oddInputs = [...document.querySelectorAll(".enc-odd")].map(
+          (i) => Number(i.value) || 0,
+        );
+        const evenInputs = [...document.querySelectorAll(".enc-even")].map(
+          (i) => Number(i.value) || 0,
+        );
+        if (oddInputs.length === 0) return;
+
+        // O 'Set' exclui variáveis duplicadas. Portanto, conta os números de shift únicos.
+        const uniqueShifts = new Set([...oddInputs, ...evenInputs]).size;
+        const totalFields = oddInputs.length + evenInputs.length;
+
+        // Uma regra de ouro: quantos mais shifts variados num universo possível, mais complexo.
+        let score = (uniqueShifts / totalFields) * 100;
+        const bar = document.getElementById("encStrengthBar");
+        const text = document.getElementById("encStrengthText");
+
+        // Atualização da interface (HTML -> Style) no DOM com as lógicas If/Else condicional
+        if (score <= 20) {
+          bar.style.width = "33%";
+          bar.style.background = "var(--error)";
+          text.textContent = "Weak";
+        } else if (score <= 60) {
+          bar.style.width = "66%";
+          bar.style.background = "var(--warn)";
+          text.textContent = "Medium";
+        } else {
+          bar.style.width = "100%";
+          bar.style.background = "var(--success)";
+          text.textContent = "Strong";
+        }
+      }
+
+      /*
+         FLUXO DE INTERAÇÃO (TABS):
+         Para cada botão, atrela um evento. Se o usuário clicar, primeiro limpa a classe 'active'
+         de todo mundo, depois joga 'active' exclusivamente para o botão que ele clicou, e para a
+         sua seção painel HTML equivalente usando o "dataset" (id = panel-encode, por exemplo).
+      */
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          document
+            .querySelectorAll(".panel")
+            .forEach((p) => p.classList.remove("active"));
+          document
+            .getElementById("panel-" + btn.dataset.tab)
+            .classList.add("active");
+        });
+      });
+
+      /* =========================================================================
+         ENCODER LOGIC & INTERFACE CONTROL
+         ========================================================================= */
+      let encConfigSig = null,
+        decConfigSig = null;
+      const sigOf = (words, keep) => JSON.stringify([words, !!keep]);
+      /* Strict: every token must be a whole number >= 1 (one trailing comma tolerated). */
+      function parseSizes(str) {
+        const n = str
+          .trim()
+          .replace(/,\s*$/, "")
+          .split(",")
+          .map((t) => (/^\d+$/.test(t.trim()) ? Number(t) : NaN));
+        return n.length && n.every((v) => v >= 1) ? n : null;
+      }
+      const encKeepSpecial = document.getElementById("encKeepSpecial");
+
+      /* Esta função constrói o bloco de HTML (linhas de input) injetando o índice atual da palavra com Template Literals. */
+      function buildEncShiftRow(index, word) {
+        const letters = word
+          .split("")
+          .map(
+            (ch, i) =>
+              `<span class="letter ${i % 2 === 0 ? "odd" : "even"}">${escapeHtml(ch)}</span>`,
+          )
+          .join("");
+        return `
+        <div class="shift-row">
+          <span class="row-num">${index + 1}</span>
+          <span class="row-word">${letters}</span>
+          <div class="row-inputs">
+            <label class="shift-field odd"><input type="number" min="0" max="25" class="enc-odd" placeholder="0-25" inputmode="numeric" aria-label="Word ${index + 1}, odd-position shift"></label>
+            <label class="shift-field even"><input type="number" min="0" max="25" class="enc-even" placeholder="0-25" inputmode="numeric" aria-label="Word ${index + 1}, even-position shift"></label>
+          </div>
+        </div>`;
+      }
+
+      document.getElementById("encConfigBtn").addEventListener("click", () => {
+        const words = splitWords(encPhrase.value, encKeepSpecial.checked);
+        if (words.length === 0)
+          return showAlert(encAlert, "error", "Enter a phrase.", encPhrase);
+        // O "map" percorre o Array de palavras, roda a função criadora de linhas HTML, o join consolida, e o innerHTML substitui o div vazio no HTML pela lista visual formidável recém gerada.
+        document.getElementById("encShiftsContainer").innerHTML = words
+          .map((w, i) => buildEncShiftRow(i, w))
+          .join("");
+        encConfigSig = sigOf(words, encKeepSpecial.checked);
+        document.getElementById("encWordsInfo").hidden = false;
+        document.getElementById("encLegend").hidden = false;
+        document.getElementById("encFastFill").hidden = false;
+        document.getElementById("encStrengthContainer").hidden = false;
+        document.getElementById("encWordsInfo").textContent =
+          `${words.length} words detected.`;
+        evaluateStrength();
+      });
+
+      // Limpeza de UI: reseta variáveis visíveis escondendo novamente ao restaurar pro padrão original
+      document.getElementById("encClearBtn").addEventListener("click", () => {
+        document.getElementById("encPhrase").value = "";
+        document.getElementById("encShiftsContainer").innerHTML = "";
+        encConfigSig = null;
+        document.getElementById("encWordsInfo").hidden = true;
+        document.getElementById("encLegend").hidden = true;
+        document.getElementById("encFastFill").hidden = true;
+        document.getElementById("encStrengthContainer").hidden = true;
+        document.getElementById("encResultWrap").hidden = true;
+        document.getElementById("swapBtn").hidden = true;
+        clearAlert(document.getElementById("encAlert"));
+      });
+
+      // Lógicas da ferramenta Fast/Quick Fill: Manipulação de DOM para varrer forEach() nos campos input.
+      document
+        .getElementById("encFastApplyBtn")
+        .addEventListener("click", () => {
+          const oddVal = document.getElementById("encFastOdd").value.trim();
+          const evenVal = document.getElementById("encFastEven").value.trim();
+
+          const oddArray = oddVal
+            ? oddVal
+                .split(",")
+                .map((n) => Math.min(25, Math.max(0, Number(n.trim()) || 0)))
+            : null;
+          const evenArray = evenVal
+            ? evenVal
+                .split(",")
+                .map((n) => Math.min(25, Math.max(0, Number(n.trim()) || 0)))
+            : null;
+
+          if (oddArray) {
+            document.querySelectorAll(".enc-odd").forEach((inp, idx) => {
+              if (!inp.value || inp.value === "0") {
+                inp.value = oddArray[idx % oddArray.length];
+              }
+            });
+          }
+
+          if (evenArray) {
+            document.querySelectorAll(".enc-even").forEach((inp, idx) => {
+              if (!inp.value || inp.value === "0") {
+                inp.value = evenArray[idx % evenArray.length];
+              }
+            });
+          }
+
+          evaluateStrength();
+        });
+
+      document.getElementById("presetRot13").addEventListener("click", () => {
+        document
+          .querySelectorAll(".enc-odd, .enc-even")
+          .forEach((i) => (i.value = 13));
+        evaluateStrength();
+      });
+
+      document
+        .getElementById("presetFibonacci")
+        .addEventListener("click", () => {
+          const fib = [1, 2, 3, 5, 8, 13, 21];
+          document
+            .querySelectorAll(".enc-odd")
+            .forEach((inp, idx) => (inp.value = fib[idx % fib.length]));
+          document
+            .querySelectorAll(".enc-even")
+            .forEach((inp, idx) => (inp.value = fib[(idx + 1) % fib.length]));
+          evaluateStrength();
+        });
+
+      document
+        .getElementById("presetProgressive")
+        .addEventListener("click", () => {
+          document
+            .querySelectorAll(".enc-odd")
+            .forEach((inp, idx) => (inp.value = (idx + 1) % 26));
+          document
+            .querySelectorAll(".enc-even")
+            .forEach((inp, idx) => (inp.value = (idx + 2) % 26));
+          evaluateStrength();
+        });
+
+      // Gera aleatoriedade (Math.random() vai de 0 a 0.99... multiplica-se por 26 e joga pro piso mais próximo usando Floor, resultando em 0 a 25)
+      document.getElementById("encRandomBtn").addEventListener("click", () => {
+        document
+          .querySelectorAll(".enc-odd, .enc-even")
+          .forEach((i) => (i.value = Math.floor(Math.random() * 26)));
+        evaluateStrength();
+      });
+
+      /* 
+         FLUXO DE INTERAÇÃO DO CODIFICADOR (BOTÃO ENCODE):
+         1. Usuário clica em 'Encode' (Codificar).
+         2. Ouvinte aciona a função de callback e valida se todos os campos requeridos foram preenchidos.
+         3. A função percorre os campos .enc-odd e .enc-even exigindo preenchimento completo de cada shift.
+         4. Se algum campo estiver vazio ou desconfigurado, exibe alerta de erro.
+         5. customCipher devolve os bytes/caracteres embaralhados e exibe os resultados.
+      */
+      document.getElementById("encSubmitBtn").addEventListener("click", () => {
+        const phrase = encPhrase.value.trim();
+        if (!phrase) {
+          return showAlert(
+            encAlert,
+            "error",
+            "Please enter the original phrase.",
+            encPhrase,
+          );
+        }
+
+        const words = splitWords(phrase, encKeepSpecial.checked);
+        if (words.length === 0) {
+          return showAlert(
+            encAlert,
+            "error",
+            "Please enter a valid phrase with letters.",
+            encPhrase,
+          );
+        }
+
+        const oddInputs = document.querySelectorAll(".enc-odd");
+        const evenInputs = document.querySelectorAll(".enc-even");
+
+        if (oddInputs.length === 0) {
+          return showAlert(encAlert, "error", "Please configure shifts first.");
+        }
+
+        if (
+          oddInputs.length !== words.length ||
+          encConfigSig !== sigOf(words, encKeepSpecial.checked)
+        ) {
+          return showAlert(
+            encAlert,
+            "error",
+            "Phrase changed. Please click 'Configure shifts' again.",
+            encConfigBtn,
+          );
+        }
+
+        const shiftIssue = checkShifts(oddInputs, evenInputs);
+        const hasEmptyShift = shiftIssue === "empty";
+
+        if (hasEmptyShift) {
+          return showAlert(
+            encAlert,
+            "error",
+            "Please fill in all shift fields before encoding.",
+          );
+        }
+
+        if (shiftIssue)
+          return showAlert(
+            encAlert,
+            "error",
+            "Shifts must be whole numbers from 0 to 25.",
+          );
+        const shifts = [];
+        for (let i = 0; i < words.length; i++) {
+          shifts.push([
+            Number(oddInputs[i].value),
+            Number(evenInputs[i].value),
+          ]);
+        }
+
+        const result = customCipher(phrase, shifts, encKeepSpecial.checked);
+        const lengths = words.map((w) => w.length).join(", ");
+        const formattedShifts = shifts
+          .map((s) => `[${s[0]}, ${s[1]}]`)
+          .join(", ");
+
+        document.getElementById("encResult").textContent = result;
+        document.getElementById("encSizes").textContent = lengths;
+        document.getElementById("encShiftsResult").textContent =
+          formattedShifts;
+        document.getElementById("encResultWrap").hidden = false;
+        revealResult("encResultWrap");
+        document.getElementById("swapBtn").hidden = false;
+        showAlert(encAlert, "success", "Encoded successfully.");
+        addHistory("Encode", phrase, result); // Grava na Memória persistente
+      });
+
+      // SWAP / FLIP (Botão que transfere do painel Encode pro Decode automaticamente com Javascript via .value + click())
+      document.getElementById("swapBtn").addEventListener("click", () => {
+        document.getElementById("decMessage").value =
+          document.getElementById("encResult").textContent;
+        document.getElementById("decSizes").value =
+          document.getElementById("encSizes").textContent;
+        document.getElementById("tab-decode").click();
+      });
+
+      /* =========================================================================
+         DECODER LOGIC
+         ========================================================================= */
+      // Shifts parsed from "Paste Data"; consumed by the Configure handler so the
+      // rows are created already filled (no dependence on later DOM timing).
+      let pendingDecShifts = null;
+
+      document.getElementById("decConfigBtn").addEventListener("click", () => {
+        const rawSizes = document.getElementById("decSizes").value.trim();
+        if (!rawSizes)
+          return showAlert(decAlert, "error", "Enter the lengths.", decSizes);
+        const sizes = parseSizes(rawSizes);
+        if (!sizes)
+          return showAlert(
+            decAlert,
+            "error",
+            "Please enter valid word lengths separated by commas.",
+            decSizes,
+          );
+        decConfigSig = sizes.join(",");
+        const preset = pendingDecShifts;
+        pendingDecShifts = null;
+        const presetVal = (i, k) => (preset && preset[i] ? preset[i][k] : "");
+        const html = sizes
+          .map(
+            (s, i) => `
+          <div class="shift-row">
+            <span class="row-num">${i + 1}</span>
+            <div class="row-inputs">
+              <label class="shift-field odd"><input type="number" min="0" max="25" class="dec-odd" placeholder="0-25" inputmode="numeric" value="${presetVal(i, 0)}" aria-label="Word ${i + 1}, odd-position shift"></label>
+              <label class="shift-field even"><input type="number" min="0" max="25" class="dec-even" placeholder="0-25" inputmode="numeric" value="${presetVal(i, 1)}" aria-label="Word ${i + 1}, even-position shift"></label>
+            </div>
+          </div>
+        `,
+          )
+          .join("");
+        document.getElementById("decShiftsContainer").innerHTML = html;
+        document.getElementById("decWordsInfo").hidden = false;
+        document.getElementById("decWordsInfo").textContent =
+          `${sizes.length} words expected.`;
+      });
+
+      // Clear Decoder
+      document.getElementById("decClearBtn").addEventListener("click", () => {
+        document.getElementById("decMessage").value = "";
+        document.getElementById("decSizes").value = "";
+        document.getElementById("decShiftsContainer").innerHTML = "";
+        decConfigSig = null;
+        document.getElementById("decWordsInfo").hidden = true;
+        document.getElementById("decResultWrap").hidden = true;
+        clearAlert(document.getElementById("decAlert"));
+      });
+
+      // Clicar Decode com validação de preenchimento completo
+      document.getElementById("decSubmitBtn").addEventListener("click", () => {
+        const rawMsg = document.getElementById("decMessage").value;
+        const msg = rawMsg.replace(/\s+/g, "");
+
+        if (!rawMsg.trim()) {
+          return showAlert(
+            decAlert,
+            "error",
+            "Please enter the encoded message.",
+            decMessage,
+          );
+        }
+
+        const sizesInput = document.getElementById("decSizes").value.trim();
+        if (!sizesInput) {
+          return showAlert(
+            decAlert,
+            "error",
+            "Please enter the original word lengths.",
+            decSizes,
+          );
+        }
+
+        const sizes = parseSizes(sizesInput) || [];
+
+        if (sizes.length === 0) {
+          return showAlert(
+            decAlert,
+            "error",
+            "Please enter valid word lengths separated by commas.",
+            decSizes,
+          );
+        }
+
+        const oddInputs = document.querySelectorAll(".dec-odd");
+        const evenInputs = document.querySelectorAll(".dec-even");
+
+        if (oddInputs.length === 0) {
+          return showAlert(decAlert, "error", "Please configure shifts first.");
+        }
+
+        if (
+          oddInputs.length !== sizes.length ||
+          decConfigSig !== sizes.join(",")
+        ) {
+          return showAlert(
+            decAlert,
+            "error",
+            "Word lengths changed. Please click 'Configure shifts' again.",
+            decConfigBtn,
+          );
+        }
+
+        const shiftIssue = checkShifts(oddInputs, evenInputs);
+        const hasEmptyShift = shiftIssue === "empty";
+
+        if (hasEmptyShift) {
+          return showAlert(
+            decAlert,
+            "error",
+            "Please fill in all shift fields before decoding.",
+          );
+        }
+
+        if (shiftIssue)
+          return showAlert(
+            decAlert,
+            "error",
+            "Shifts must be whole numbers from 0 to 25.",
+          );
+        const shifts = [];
+        for (let i = 0; i < sizes.length; i++) {
+          shifts.push([
+            Number(oddInputs[i].value),
+            Number(evenInputs[i].value),
+          ]);
+        }
+
+        const total = sizes.reduce((a, b) => a + b, 0);
+        if (msg.length !== total)
+          return showAlert(
+            decAlert,
+            "error",
+            `The message has ${msg.length} characters, but the word lengths add up to ${total}.`,
+            decMessage,
+          );
+        const res = customDecipher(msg, shifts, sizes);
+        document.getElementById("decResult").textContent = res;
+        document.getElementById("decResultWrap").hidden = false;
+        revealResult("decResultWrap");
+        showAlert(decAlert, "success", "Decoded successfully.");
+        addHistory("Decode", msg, res);
+      });
+
+      /* =========================================================================
+         POPUP MENUS (Updates & History)
+         ========================================================================= */
+
+      /*
+         Função modular que atrela o 'abrir caixa de opção' num botão. 
+         Parâmetros: ID do botão e ID da caixa HTML a ligar/desligar a classe 'show' (que faz ter display block).
+      */
+      function toggleBox(btnId, boxId) {
+        const btn = document.getElementById(btnId);
+        const box = document.getElementById(boxId);
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation(); // Evita que o evento borbulhe e o document entenda como clique global fechando ele.
+          document.querySelectorAll(".floating-box").forEach((b) => {
+            if (b !== box) b.classList.remove("show"); // Fecha outra caixa aberta se houver.
+          });
+          box.classList.toggle("show"); // Adiciona .show se não tem, ou retira se tiver.
+        });
+      }
+      toggleBox("updateLogBtn", "updateLogBox");
+      toggleBox("historyBtn", "historyBox");
+
+      // Clicar em qualquer lugar da tela (document.addEventListener global) esconde menus e abas flutuantes
+      document.addEventListener("click", (e) => {
+        if (
+          !e.target.closest(".floating-box") &&
+          !e.target.closest(".update-btn") &&
+          !e.target.closest(".history-toggle")
+        ) {
+          document
+            .querySelectorAll(".floating-box")
+            .forEach((b) => b.classList.remove("show"));
+        }
+      });
+    </script>
+
+    <script>
+      /* =========================================================================
+         ANIMATION LAYER + UX ENHANCEMENTS (Camada de Animação Avançada)
+         Este script é encapsulado numa IIFE (Immediately Invoked Function Expression) (() => { ... })(); 
+         Significa que esta função complexa executa a si mesma logo no abrir da página, e as variáveis 
+         dentro dela ('$', 'app') ficam protegidas e não "vazam" atrapalhando outros scripts gerais.
+         ========================================================================= */
+      (() => {
+        // Criação de atalhos em Arrow Functions para simplificar código, o famoso '$' das bibliotecas de UI.
+        const $ = (id) => document.getElementById(id);
+        const app = document.querySelector(".app");
+        // matchMedia checa nas configurações do Windows/Celular se a pessoa preferiu "Movimento Reduzido" no sistema.
+        const reduced = () =>
+          matchMedia("(prefers-reduced-motion: reduce)").matches;
+        // Puxa a propriedade CSS computada final da página sobre o Timing de Transição
+        const EASE =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--anim-ease")
+            .trim() || "ease-out";
+        const px = parseFloat; // Converte string de pixel ("200px") em número de matemática float.
+        const heightOf = (el) => el.getBoundingClientRect().height; // Api do navegador que descobre a altura de um bloco exato desenhado pela GPU na tela
+
+        /* 
+           Função construtora de Web Animation API (recurso de browser super poderoso sem CSS fixo).
+           el: O elemento, from: Estado de partida css, to: Estado de chegada css, duration: Tempo, done: callback (função retornada quando termina).
+        */
+        function play(el, from, to, duration, done) {
+          el.style.overflow = "hidden";
+          el.style.overflow = "clip"; // Garante que bordas não vazem (usado no edge/chrome)
+          const anim = el.animate([from, to], { duration, easing: EASE });
+          el._anim = anim;
+          anim.onfinish = anim.oncancel = () => {
+            if (el._anim !== anim) return;
+            el.style.overflow = "";
+            if (done) done();
+          };
+        }
+
+        /* --- 1. Encoder <-> Decoder (Abas trocando animadas) ---------------- */
+        document.querySelector(".tabs").addEventListener(
+          "click",
+          (e) => {
+            const btn = e.target.closest(".tab-btn");
+            const out = document.querySelector(".panel.active");
+            const into = btn && $("panel-" + btn.dataset.tab);
+            if (!into || into === out || reduced()) return;
+
+            const from = heightOf(app);
+            out.style.top = out.offsetTop + "px";
+            out.classList.remove("is-entering");
+            out.classList.add("is-leaving");
+            into.classList.remove("is-leaving");
+            into.style.top = "";
+            into.classList.add("is-entering");
+
+            // O requestAnimationFrame garante que o navegador tenha renderizado a bagunça anterior antes de calcularmos o novo quadro (frame).
+            requestAnimationFrame(() => {
+              app.getAnimations().forEach((a) => a.cancel());
+              const to = heightOf(app);
+              if (Math.abs(to - from) > 1)
+                play(app, { height: from + "px" }, { height: to + "px" }, 300);
+            });
+          },
+          true,
+        );
+        app.addEventListener("animationend", (e) => {
+          if (e.target.classList.contains("panel")) {
+            e.target.classList.remove("is-entering", "is-leaving");
+            e.target.style.top = "";
+          }
+          rowSettled(e.target);
+        });
+        app.addEventListener("animationcancel", (e) => rowSettled(e.target));
+        function rowSettled(el) {
+          if (!el.classList.contains("row-enter")) return;
+          el.classList.remove("row-enter");
+          el.style.removeProperty("--i");
+        }
+
+        /* --- 2 & 3. "Configure shifts": expand, collapse, regenerate -------- */
+        const BLOCKS = {
+          enc: [
+            "encWordsInfo",
+            "encLegend",
+            "encStrengthContainer",
+            "encFastFill",
+          ],
+          dec: ["decWordsInfo"],
+        };
+        // Estado colapsado, totalmente em zero.
+        const SHUT = {
+          height: "0px",
+          marginTop: "0px",
+          marginBottom: "0px",
+          paddingTop: "0px",
+          paddingBottom: "0px",
+          borderTopWidth: "0px",
+          borderBottomWidth: "0px",
+          opacity: 0,
+          transform: "translateY(-6px)",
+        };
+        const ROW_MS = 260,
+          STAGGER_MS = 40,
+          STAGGER_MAX = 8;
+
+        const rendered = (el) => el.getClientRects().length > 0;
+        const boxOf = (el) => {
+          const s = getComputedStyle(el);
+          return {
+            height: heightOf(el) + "px",
+            marginTop: s.marginTop,
+            marginBottom: s.marginBottom,
+            paddingTop: s.paddingTop,
+            paddingBottom: s.paddingBottom,
+            borderTopWidth: s.borderTopWidth,
+            borderBottomWidth: s.borderBottomWidth,
+            opacity: s.opacity,
+            transform: s.transform,
+          };
+        };
+
+        document.addEventListener(
+          "click",
+          (e) => {
+            const btn = e.target.closest(
+              "#encConfigBtn, #encClearBtn, #decConfigBtn, #decClearBtn",
+            );
+            if (!btn) return;
+            const side = btn.id.slice(0, 3); // "enc" ou "dec"
+            const rows = $(side + "ShiftsContainer");
+            const firstBefore = rows.firstElementChild;
+            const wantFocus = e.isTrusted && btn.id.endsWith("ConfigBtn");
+            const motion = !reduced();
+            const snap = motion && {
+              rows,
+              h0: heightOf(rows),
+              old: [...rows.children],
+              blocks: BLOCKS[side].map((id) => {
+                const el = $(id);
+                return { el, from: rendered(el) ? boxOf(el) : null };
+              }),
+            };
+            requestAnimationFrame(() => {
+              const settle = snap ? animateConfig(snap) : null;
+              if (
+                wantFocus &&
+                rows.firstElementChild &&
+                rows.firstElementChild !== firstBefore
+              )
+                focusFirstShift(rows, settle);
+            });
+          },
+          true, // Capture-phase (terceiro parâmetro booleano indica se o evento começa na fase de Captura da árvore do DOM)
+        );
+
+        function animateConfig({ rows, h0, old, blocks }) {
+          const plans = [];
+          let rowsMs = 0;
+
+          blocks.forEach(({ el, from }) => {
+            el.getAnimations().forEach((a) => a.cancel());
+            el.classList.remove("cfg-leaving");
+            if (rendered(el)) {
+              const to = boxOf(el);
+              if (
+                !from ||
+                Math.abs(px(from.height) - px(to.height)) > 0.5 ||
+                from.opacity != 1
+              )
+                plans.push({ el, from: from || SHUT, to });
+            } else if (from) {
+              el.classList.add("cfg-leaving");
+              plans.push({
+                el,
+                from,
+                to: SHUT,
+                done: () => el.classList.remove("cfg-leaving"),
+              });
+            }
+          });
+
+          rows.getAnimations().forEach((a) => a.cancel());
+          if (old.length && !rows.children.length) {
+            old.forEach((r) => {
+              r.inert = true;
+              r.classList.remove("row-enter");
+              r.querySelectorAll("input").forEach((i) =>
+                i.removeAttribute("class"),
+              );
+              rows.append(r);
+            });
+            plans.push({
+              el: rows,
+              from: { height: h0 + "px", opacity: 1 },
+              to: { height: "0px", opacity: 0 },
+              done: () => old.forEach((r) => r.remove()),
+            });
+          } else if (
+            rows.children.length &&
+            rows.firstElementChild !== old[0]
+          ) {
+            const fresh = [...rows.children];
+            fresh.forEach((r, i) => {
+              r.style.setProperty("--i", i);
+              r.classList.add("row-enter");
+            });
+            rowsMs =
+              ROW_MS + Math.min(fresh.length - 1, STAGGER_MAX) * STAGGER_MS;
+            plans.push({
+              el: rows,
+              from: { height: h0 + "px" },
+              to: { height: heightOf(rows) + "px" },
+            });
+          }
+
+          const total = plans.reduce(
+            (sum, p) => sum + Math.abs(px(p.to.height) - px(p.from.height)),
+            0,
+          );
+          const duration = Math.round(Math.min(460, 220 + total * 0.2));
+          plans.forEach((p) => play(p.el, p.from, p.to, duration, p.done));
+          return Math.max(duration, rowsMs);
+        }
+
+        /* --- Smart auto-focus: foca no primeiro campo da palavra quando clica Configure ---------------- */
+        function focusFirstShift(rows, settleMs) {
+          const first = rows.querySelector("input[type='number']");
+          if (!first) return;
+          if (settleMs == null) return first.focus();
+          first.focus({ preventScroll: true }); // Foca para permitir digitação no teclado imediatamente
+          // Aguarda com setTimeout a resolução animada para centralizar a tela, se for o caso
+          setTimeout(() => {
+            if (document.activeElement !== first) return;
+            const r = first.getBoundingClientRect();
+            if (r.top < 0 || r.bottom > innerHeight)
+              first.scrollIntoView({ block: "center", behavior: "smooth" }); // scrollIntoView empurra o navegador nativamente
+          }, settleMs + 30);
+        }
+
+        /* --- Navegação de Setas (Arrow-key) entre inputs de números gerados ---------------------- */
+        // Usamos um Objeto em JS para mapear atalhos: se ele pressionar Cima, pula duas casas no array, Dir pula uma, etc.
+        const ARROW_STEP = {
+          ArrowRight: 1,
+          ArrowLeft: -1,
+          ArrowDown: 2,
+          ArrowUp: -2,
+        };
+        ["encShiftsContainer", "decShiftsContainer"].forEach((id) => {
+          const container = $(id);
+          container.addEventListener("keydown", (e) => {
+            const step = ARROW_STEP[e.key];
+            if (!step || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
+              return;
+            if (!e.target.matches("input[type='number']")) return;
+            e.preventDefault();
+            const inputs = [
+              ...container.querySelectorAll("input[type='number']"),
+            ];
+            const next = inputs[inputs.indexOf(e.target) + step];
+            if (next) {
+              next.focus();
+              next.select(); // Seleciona tudo para que a digitação futura substitua o anterior ao invés de somar no final.
+            }
+          });
+        });
+
+        /* --- Validação visual instantânea -------------------------------------- */
+        const SHIFT_INPUTS = ".enc-odd, .enc-even, .dec-odd, .dec-even";
+        function syncFilled(input) {
+          const filled = input.value !== "" && Number(input.value) > 0;
+          // toggleAttribute põe um atributo "data-filled" no html se a condicional filled é verdadeira
+          if (filled !== input.hasAttribute("data-filled"))
+            input.toggleAttribute("data-filled", filled);
+        }
+        const syncAllFilled = () =>
+          document.querySelectorAll(SHIFT_INPUTS).forEach(syncFilled);
+
+        // O evento "input" é gerado quando o usuário digita algo em tempo real.
+        ["encShiftsContainer", "decShiftsContainer"].forEach((id) =>
+          $(id).addEventListener("input", (e) => {
+            if (e.target.matches(SHIFT_INPUTS)) syncFilled(e.target);
+          }),
+        );
+
+        document.addEventListener("click", syncAllFilled);
+
+        // O MutationObserver é uma API avançada que "espia" mudanças na árvore do HTML. Aqui ele vigia se a caixa de alerta avisou sucesso na cola.
+        new MutationObserver(syncAllFilled).observe($("decAlert"), {
+          attributes: true,
+          childList: true,
+          characterData: true,
+          subtree: true,
+        });
+
+        /* --- Função de Restauração ------------------------------------------- */
+        // Event listener interativo mapeado à interface
+        $("encResetBtn").addEventListener("click", () => {
+          document
+            .querySelectorAll(".enc-odd, .enc-even")
+            .forEach((i) => (i.value = 0));
+          evaluateStrength();
+        });
+
+        /* --- Refinement layer: tabs, popovers, stale/invalid hints, result reveal --- */
+        const tabsEl = document.querySelector(".tabs");
+        const tabs = [...tabsEl.querySelectorAll(".tab-btn")];
+        const ind = document.createElement("span");
+        ind.className = "tab-indicator";
+        ind.setAttribute("aria-hidden", "true");
+        tabsEl.append(ind);
+        tabs.forEach((t) => {
+          const p = $("panel-" + t.dataset.tab);
+          t.setAttribute("aria-controls", p.id);
+          p.setAttribute("aria-labelledby", t.id);
+        });
+        function syncTabs(snap) {
+          tabs.forEach((t) => {
+            const on = t.classList.contains("active");
+            t.setAttribute("aria-selected", on);
+            t.tabIndex = on ? 0 : -1;
+          });
+          const a = tabs.find((t) => t.classList.contains("active"));
+          if (snap) ind.style.transition = "none";
+          ind.style.transform = `translateX(${a.offsetLeft}px) scaleX(${a.offsetWidth})`;
+          if (snap) {
+            void ind.offsetWidth;
+            ind.style.transition = "";
+          }
+        }
+        syncTabs(true);
+        tabsEl.addEventListener("click", () => syncTabs());
+        addEventListener("resize", () => syncTabs(true));
+        document.fonts && document.fonts.ready.then(() => syncTabs(true));
+        tabsEl.addEventListener("keydown", (e) => {
+          const i = tabs.indexOf(document.activeElement);
+          const n = {
+            ArrowRight: i + 1,
+            ArrowLeft: i - 1,
+            Home: 0,
+            End: tabs.length - 1,
+          }[e.key];
+          if (i < 0 || n == null) return;
+          e.preventDefault();
+          const t = tabs[(n + tabs.length) % tabs.length];
+          t.focus();
+          t.click();
+        });
+
+        /* Popovers grow from their trigger; aria-expanded + Escape for keyboard users */
+        document.addEventListener(
+          "click",
+          (e) => {
+            const t = e.target.closest("#updateLogBtn, #historyBtn");
+            if (!t) return;
+            const box = $(
+              t.id === "historyBtn" ? "historyBox" : "updateLogBox",
+            );
+            const b = box.getBoundingClientRect(),
+              r = t.getBoundingClientRect();
+            box.style.transformOrigin = `${r.left + r.width / 2 - b.left}px 0`;
+          },
+          true,
+        );
+        [
+          ["updateLogBox", "updateLogBtn"],
+          ["historyBox", "historyBtn"],
+        ].forEach(([b, t]) => {
+          const box = $(b),
+            btn = $(t);
+          new MutationObserver(() =>
+            btn.setAttribute("aria-expanded", box.classList.contains("show")),
+          ).observe(box, { attributes: true, attributeFilter: ["class"] });
+        });
+        document.addEventListener("keydown", (e) => {
+          const open =
+            e.key === "Escape" && document.querySelector(".floating-box.show");
+          if (!open) return;
+          open.classList.remove("show");
+          $(open.id === "historyBox" ? "historyBtn" : "updateLogBtn").focus();
+        });
+
+        $("themeBtn").addEventListener("click", () => {
+          if (!reduced())
+            $("themeBtn").animate(
+              [
+                { transform: "rotate(-70deg) scale(.5)", opacity: 0 },
+                { transform: "none", opacity: 1 },
+              ],
+              { duration: 380, easing: EASE },
+            );
+        });
+
+        /* Shifts go stale the moment the phrase / lengths change after Configure */
+        const watch = (inputs, current, saved, box, btn) => {
+          const f = () => {
+            const s = saved(),
+              st = !!s && s !== current();
+            box.classList.toggle("is-stale", st);
+            btn.classList.toggle("needs-config", st);
+          };
+          inputs.forEach(([el, ev]) => el.addEventListener(ev, f));
+          btn.addEventListener("click", f);
+          $(btn.id.slice(0, 3) + "ClearBtn").addEventListener("click", f);
+        };
+        watch(
+          [
+            [encPhrase, "input"],
+            [encKeepSpecial, "change"],
+          ],
+          () =>
+            sigOf(
+              splitWords(encPhrase.value, encKeepSpecial.checked),
+              encKeepSpecial.checked,
+            ),
+          () => encConfigSig,
+          $("encShiftsContainer"),
+          $("encConfigBtn"),
+        );
+        watch(
+          [[$("decSizes"), "input"]],
+          () => (parseSizes($("decSizes").value) || []).join(","),
+          () => decConfigSig,
+          $("decShiftsContainer"),
+          $("decConfigBtn"),
+        );
+
+        /* Invalid markers clear as soon as the user acts on the field */
+        const unflag = (el) => {
+          el.classList.remove("invalid");
+          el.removeAttribute("aria-invalid");
+        };
+        document.addEventListener("input", (e) => {
+          if (e.target.classList && e.target.classList.contains("invalid"))
+            unflag(e.target);
+        });
+        document.addEventListener("click", (e) => {
+          const b = e.target.closest(".btn.invalid");
+          if (b) unflag(b);
+        });
+
+        /* Results arrive as a staggered reveal, then scroll into view if needed */
+        window.revealResult = (id) => {
+          const wrap = $(id);
+          if (!reduced())
+            [...wrap.children].forEach((c, i) =>
+              c.animate(
+                [
+                  { opacity: 0, transform: "translateY(6px)" },
+                  { opacity: 1, transform: "none" },
+                ],
+                {
+                  duration: 300,
+                  delay: i * 45,
+                  easing: EASE,
+                  fill: "backwards",
+                },
+              ),
+            );
+          requestAnimationFrame(() => {
+            const r = wrap.getBoundingClientRect();
+            if (r.bottom > innerHeight || r.top < 0)
+              wrap.scrollIntoView({
+                block: "nearest",
+                behavior: reduced() ? "auto" : "smooth",
+              });
+          });
+        };
+      })(); // Fechamento da função Auto Executável (IIFE)
+    </script>
+  </body>
+</html>
