@@ -1627,6 +1627,710 @@ SOFTWARE.
           opacity: 0;
         }
       }
+
+      /* =========================================================================
+         TUTORIAL BOX: "How do I use this?"
+         A separate card under .app with its own tab system. Every class is
+         prefixed tutorial-, so the main script's .tabs / .tab-btn / .panel
+         selectors never see it. It only reads the shared tokens (--canvas,
+         --paper, --ink, --border, --odd, --even ...), so both themes just work.
+         Motion follows SKILL.md / RECIPES.md: transform, opacity and clip-path
+         (plus one short height tween, the accordion exception), strong custom
+         curves, everything under 300 ms, a capped stagger, hover limited to fine
+         pointers, and reduced motion = opacity only (gentler, not zero).
+         ========================================================================= */
+      :root {
+        --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      }
+
+      .tutorial {
+        max-width: 800px;
+        margin: 0 auto 40px;
+        background: var(--paper);
+        color: var(--ink);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow:
+          0 1px 2px rgba(20, 24, 32, 0.05),
+          0 12px 32px -16px rgba(20, 24, 32, 0.14);
+      }
+      [data-theme="dark"] .tutorial {
+        box-shadow: none;
+      }
+      /* The tutorial hangs closer to the main card than the page edge does. */
+      .app:has(+ .tutorial) {
+        margin-bottom: 24px;
+      }
+
+      /* ---- Header: same rhythm as the hero ---- */
+      .tutorial-head {
+        padding: 28px 32px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .tutorial-title {
+        margin: 0 0 8px;
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.01em;
+        font-variant-ligatures: none;
+        text-wrap: balance;
+      }
+      .tutorial-lead {
+        margin: 0;
+        max-width: 62ch;
+        color: var(--muted-text);
+        font-size: 14.5px;
+        line-height: 1.55;
+        text-wrap: pretty;
+      }
+
+      /* ---- Tabs ----
+         Two layers. The real buttons carry the "unselected" look and all the
+         semantics. Above them sits an aria-hidden copy of the list in the
+         "selected" look (paper background, ink text, underline), clipped to the
+         selected tab. Moving the clip window changes text and background in one
+         piece, so nothing is interpolated tab by tab (RECIPES.md). */
+      .tutorial-tabs {
+        position: relative;
+        background: var(--canvas);
+        border-bottom: 1px solid var(--border);
+      }
+      .tutorial-tablist {
+        display: flex;
+      }
+      .tutorial-tab-btn,
+      .tutorial-tab-face {
+        flex: 0 0 auto;
+        margin: 0;
+        padding: 14px 22px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        font-family: var(--mono);
+        font-size: 14px;
+        font-variant-ligatures: none;
+        line-height: normal;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .tutorial-tab-btn {
+        background: transparent;
+        color: var(--muted-text);
+        cursor: pointer;
+        transition:
+          transform 160ms var(--ease-out),
+          color 150ms ease;
+      }
+      .tutorial-tab-btn:active {
+        transform: scale(0.97);
+      }
+      .tutorial-tab-btn:focus-visible {
+        outline-offset: -4px;
+      }
+      .tutorial-tabs-active {
+        position: absolute;
+        inset: 0 0 -1px;
+        display: flex;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+        clip-path: inset(0 100% 0 0); /* the script sets the real window */
+        transition: clip-path 250ms var(--ease-in-out);
+      }
+      .tutorial-tab-face {
+        background: var(--paper);
+        color: var(--ink);
+        border-bottom-color: var(--ink);
+      }
+      /* The selected button is covered by its copy, so the keyboard ring is repeated on the copy. */
+      .tutorial-tabs:has(#tutorial-tab-encode:focus-visible)
+        .tutorial-tab-face:nth-child(1),
+      .tutorial-tabs:has(#tutorial-tab-decode:focus-visible)
+        .tutorial-tab-face:nth-child(2) {
+        outline: 2px solid var(--ink);
+        outline-offset: -4px;
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .tutorial-tab-btn:hover {
+          color: var(--ink);
+        }
+      }
+
+      /* ---- Panels ---- */
+      .tutorial-panels.is-resizing {
+        overflow: clip; /* only while the height tween runs */
+      }
+      .tutorial-panel {
+        padding: 28px 32px 32px;
+      }
+      .tutorial-panel[hidden] {
+        display: none;
+      }
+      .tutorial-panel:focus-visible {
+        outline-offset: -4px;
+        border-radius: 0 0 var(--radius) var(--radius);
+      }
+      .tutorial-section + .tutorial-section {
+        margin-top: 28px;
+        padding-top: 28px;
+        border-top: 1px dashed var(--border);
+      }
+
+      /* ---- Type: tight on headings, calm on body (apple-design: tracking and leading follow size) ---- */
+      .tutorial-h {
+        margin: 0 0 14px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      .tutorial-h::before {
+        content: "//";
+        content: "//" / "";
+        margin-right: 8px;
+        font-family: var(--mono);
+        font-weight: 400;
+        letter-spacing: 0;
+        color: var(--muted-text);
+      }
+      .tutorial-p,
+      .tutorial-tip {
+        margin: 0 0 14px;
+        max-width: 68ch;
+        font-size: 14.5px;
+        line-height: 1.6;
+        text-wrap: pretty;
+      }
+      .tutorial-note {
+        margin: 16px 0 0;
+        padding: 12px 14px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--ink);
+        border-radius: 6px;
+        font-size: 13.5px;
+        line-height: 1.6;
+        text-wrap: pretty;
+      }
+      .tutorial-tip {
+        margin: 16px 0 0;
+        color: var(--muted-text);
+        font-size: 13.5px;
+      }
+      .tutorial-odd,
+      .tutorial-even {
+        font-weight: 600;
+      }
+      .tutorial-odd {
+        color: var(--odd);
+      }
+      .tutorial-even {
+        color: var(--even);
+      }
+
+      /* Names of buttons and fields, drawn like the real thing (kept quiet: 12.5px, no shadows). */
+      .tutorial-ui {
+        display: inline;
+        padding: 1px 6px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 0.87em;
+        font-weight: 600;
+        line-height: 1.5;
+        white-space: nowrap;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+      }
+      .tutorial-ui.is-wrap {
+        white-space: normal;
+      }
+      .tutorial-ui.is-solid {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: var(--paper);
+      }
+      .tutorial-ui.is-green {
+        background: var(--even);
+        border-color: var(--even);
+        color: var(--paper);
+      }
+      .tutorial-ui.is-console {
+        background: var(--console-bg);
+        border-color: var(--console-border);
+        color: var(--console-text);
+        font-weight: 400;
+      }
+      .tutorial code,
+      .tutorial samp {
+        padding: 1px 5px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 0.88em;
+        font-variant-ligatures: none;
+      }
+
+      /* ---- Numbered steps ---- */
+      .tutorial-steps {
+        counter-reset: step;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 14px;
+      }
+      .tutorial-steps > li {
+        position: relative;
+        padding-left: 40px;
+        font-size: 14.5px;
+        line-height: 1.6;
+        counter-increment: step;
+        text-wrap: pretty;
+      }
+      .tutorial-steps > li::before,
+      .tutorial-methods > li::before {
+        content: counter(step);
+        content: counter(step) / "";
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .tutorial-steps > li::before {
+        position: absolute;
+        left: 0;
+        top: -1px;
+      }
+
+      /* ---- Worked example (a miniature of the live preview and the console) ---- */
+      .tutorial-example {
+        margin: 0;
+        padding: 16px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .tutorial-eyebrow {
+        margin: 0 0 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.02em;
+        color: var(--muted-text);
+      }
+      .tutorial-ex-label {
+        margin: 0 0 2px;
+        font-size: 12.5px;
+        color: var(--muted-text);
+      }
+      .tutorial-ex-phrase {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 15px;
+        font-variant-ligatures: none;
+        overflow-wrap: anywhere;
+      }
+      .tutorial-tiles {
+        display: grid;
+        gap: 8px;
+        margin: 14px 0 6px;
+      }
+      .tutorial-tile-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .tutorial-tile-num {
+        width: 18px;
+        flex-shrink: 0;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted-text);
+      }
+      .tutorial-tile {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        padding: 3px 0 4px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        font-family: var(--mono);
+        line-height: 1.15;
+      }
+      .tutorial-tile i {
+        font-size: 10px;
+        font-style: normal;
+        color: var(--ink);
+        opacity: 0.72;
+      }
+      .tutorial-tile b {
+        display: block;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .tutorial-tile.odd {
+        color: var(--odd);
+        background: var(--odd-soft);
+      }
+      .tutorial-tile.even {
+        color: var(--even);
+        background: var(--even-soft);
+      }
+      .tutorial-ex-cap {
+        margin: 0 0 14px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: var(--muted-text);
+      }
+      .tutorial-console {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+        padding: 14px 16px;
+        background: var(--console-bg);
+        color: var(--console-text);
+        border: 1px solid var(--console-border);
+        border-radius: 8px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+      .tutorial-console + .tutorial-console {
+        margin-top: 10px;
+      }
+      .tutorial-ex-arrow {
+        margin: 8px 0;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted-text);
+      }
+      .tutorial-console dt {
+        margin: 0 0 2px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: color-mix(in srgb, var(--console-text) 62%, transparent);
+      }
+      .tutorial-console dd {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 14px;
+        font-variant-ligatures: none;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+
+      /* ---- Definition rows (advanced functions) ---- */
+      .tutorial-defs {
+        margin: 0;
+      }
+      .tutorial-defs > div {
+        display: grid;
+        grid-template-columns: minmax(160px, 230px) minmax(0, 1fr);
+        gap: 8px 28px;
+        padding: 14px 0;
+        border-top: 1px dashed var(--border);
+      }
+      .tutorial-defs > div:last-child {
+        padding-bottom: 0;
+      }
+      .tutorial-defs dt {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.6;
+      }
+      .tutorial-defs dd {
+        margin: 0;
+        font-size: 14.5px;
+        line-height: 1.6;
+        text-wrap: pretty;
+      }
+      .tutorial-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin: 0 4px 0 2px;
+        border-radius: 50%;
+        vertical-align: 0;
+      }
+      .tutorial-dot.is-weak {
+        background: var(--error);
+      }
+      .tutorial-dot.is-medium {
+        background: var(--warn);
+      }
+      .tutorial-dot.is-strong {
+        background: var(--success);
+      }
+
+      /* ---- Cards: export ways, decoder methods, changelog ---- */
+      .tutorial-cards,
+      .tutorial-methods,
+      .tutorial-log {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .tutorial-methods {
+        counter-reset: step;
+      }
+      .tutorial-card,
+      .tutorial-log-item {
+        padding: 16px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .tutorial-card-title {
+        margin: 0 0 6px;
+        font-size: 14.5px;
+        font-weight: 600;
+        line-height: 1.4;
+        letter-spacing: -0.005em;
+      }
+      .tutorial-card p {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--muted-text);
+        text-wrap: pretty;
+      }
+      .tutorial-methods > li {
+        counter-increment: step;
+        display: grid;
+        grid-template-columns: 26px minmax(0, 1fr);
+        column-gap: 12px;
+        align-content: start;
+      }
+      .tutorial-methods > li::before {
+        grid-row: 1 / span 2;
+        background: var(--paper);
+      }
+      .tutorial-methods .tutorial-card-title {
+        margin-top: 2px;
+      }
+      .tutorial-methods .tutorial-card-title,
+      .tutorial-methods p {
+        grid-column: 2;
+      }
+
+      .tutorial-log-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        margin-bottom: 6px;
+      }
+      .tutorial-log-head .tutorial-h {
+        margin: 0;
+      }
+      .tutorial-version {
+        padding: 2px 8px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-ligatures: none;
+      }
+      .tutorial-log-note {
+        margin: 0 0 14px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--muted-text);
+      }
+      .tutorial-log-item {
+        display: grid;
+        gap: 4px;
+        align-content: start;
+        padding: 14px 16px;
+      }
+      .tutorial-log-item.is-fix {
+        border-style: dashed;
+      }
+      .tutorial-log-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 20px;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        letter-spacing: 0.02em;
+        color: var(--muted-text);
+        font-variant-numeric: tabular-nums;
+      }
+      .tutorial-tag {
+        padding: 1px 6px;
+        border: 1px dashed var(--border);
+        border-radius: 4px;
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .tutorial-log-title {
+        font-size: 14.5px;
+        font-weight: 600;
+        line-height: 1.35;
+        letter-spacing: -0.005em;
+      }
+      .tutorial-log-desc {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--muted-text);
+        text-wrap: pretty;
+      }
+
+      .tutorial-split {
+        display: grid;
+        gap: 20px;
+      }
+
+      /* ---- Breakpoints (same ones the app uses: 600 and 1000) ---- */
+      @media (min-width: 640px) {
+        .tutorial-methods,
+        .tutorial-log {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 800px) {
+        .tutorial-cards {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (min-width: 1000px) {
+        .tutorial {
+          max-width: 1080px;
+        }
+        /* Same columns, gap and padding as the app's two panes, so the grid lines up with the card above. */
+        .tutorial-split {
+          grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+          column-gap: 36px;
+          align-items: start;
+        }
+        .tutorial-log {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 600px) {
+        .tutorial {
+          margin: 0 12px 12px;
+        }
+        .app:has(+ .tutorial) {
+          margin-bottom: 12px;
+        }
+        .tutorial-head {
+          padding: 22px 16px 16px;
+        }
+        .tutorial-title {
+          font-size: 18px;
+        }
+        .tutorial-tab-btn,
+        .tutorial-tab-face {
+          flex: 1 1 0;
+          padding: 14px 8px;
+        }
+        .tutorial-panel {
+          padding: 20px 16px 24px;
+        }
+        .tutorial-section + .tutorial-section {
+          margin-top: 24px;
+          padding-top: 24px;
+        }
+        .tutorial-defs > div {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 6px;
+        }
+        .tutorial-steps > li {
+          padding-left: 38px;
+        }
+      }
+
+      /* ---- Motion: each section of a panel rises in, 50 ms apart, capped.
+         Armed only after the first paint ([data-ready]), so the visible panel
+         does not replay on load; the hidden one animates the first time it shows.
+         A transition (not a keyframe) so quick tab changes retarget instead of restarting. ---- */
+      .tutorial-panel > .tutorial-section:nth-child(2) {
+        --i: 1;
+      }
+      .tutorial-panel > .tutorial-section:nth-child(3) {
+        --i: 2;
+      }
+      .tutorial-panel > .tutorial-section:nth-child(n + 4) {
+        --i: 3;
+      }
+      .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+        transition:
+          opacity 260ms var(--ease-out),
+          translate 260ms var(--ease-out);
+        transition-delay: calc(var(--i, 0) * 50ms);
+      }
+      @starting-style {
+        .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+          opacity: 0;
+          translate: 0 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+          transition: opacity 150ms ease;
+          transition-delay: 0s;
+        }
+        @starting-style {
+          .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+            opacity: 0;
+            translate: none;
+          }
+        }
+        .tutorial-tabs-active {
+          transition: none;
+        }
+        .tutorial-tab-btn {
+          transition: color 150ms ease;
+        }
+        .tutorial-tab-btn:active {
+          transform: none;
+        }
+      }
+      @media (prefers-contrast: more) {
+        .tutorial-tile,
+        .tutorial-ui {
+          border-color: currentColor;
+        }
+      }
+      @media (forced-colors: active) {
+        .tutorial-tab-face {
+          forced-color-adjust: none;
+          background: Highlight;
+          color: HighlightText;
+          border-bottom-color: Highlight;
+        }
+        .tutorial-tile {
+          border: 1px solid CanvasText;
+        }
+      }
     </style>
   </head>
   <body>
@@ -2072,6 +2776,519 @@ SOFTWARE.
       </div>
       </section>
     </div>
+
+    <!-- ===================== TUTORIAL: HOW DO I USE THIS? =====================
+      A separate card below the main app. Its tabs (tutorial-tab-btn) and panels
+      (tutorial-panel) are driven by their own script at the end of the page and
+      never touch the encoder / decoder tabs. -->
+    <section class="tutorial" id="tutorial" aria-labelledby="tutorialTitle">
+      <header class="tutorial-head">
+        <h2 class="tutorial-title" id="tutorialTitle">How do I use this?</h2>
+        <p class="tutorial-lead">
+          A short tour of the encoder and the decoder: what each control does,
+          and how to carry a message from one to the other.
+        </p>
+      </header>
+
+      <div class="tutorial-tabs">
+        <div
+          class="tutorial-tablist"
+          role="tablist"
+          aria-label="Tutorial sections"
+        >
+          <button
+            type="button"
+            class="tutorial-tab-btn"
+            role="tab"
+            id="tutorial-tab-encode"
+            data-tutorial-tab="encode"
+            aria-selected="true"
+            aria-controls="tutorial-panel-encode"
+          >
+            encode.js
+          </button>
+          <button
+            type="button"
+            class="tutorial-tab-btn"
+            role="tab"
+            id="tutorial-tab-decode"
+            data-tutorial-tab="decode"
+            aria-selected="false"
+            aria-controls="tutorial-panel-decode"
+            tabindex="-1"
+          >
+            decode.js
+          </button>
+        </div>
+        <!-- Visual copy of the tab list in its "selected" look. The script clips it to the selected tab. Hidden from assistive tech. -->
+        <div class="tutorial-tabs-active" aria-hidden="true">
+          <span class="tutorial-tab-face">encode.js</span>
+          <span class="tutorial-tab-face">decode.js</span>
+        </div>
+      </div>
+
+      <div class="tutorial-panels">
+        <!-- ---------- TUTORIAL PANEL: encode.js ---------- -->
+        <div
+          class="tutorial-panel"
+          role="tabpanel"
+          id="tutorial-panel-encode"
+          aria-labelledby="tutorial-tab-encode"
+          tabindex="0"
+        >
+          <section class="tutorial-section" aria-labelledby="tut-enc-guide">
+            <h3 class="tutorial-h" id="tut-enc-guide">Encoding guide</h3>
+            <div class="tutorial-split">
+              <div>
+                <ol class="tutorial-steps" role="list">
+                  <li>
+                    <strong>Write your phrase.</strong> Type or paste it into
+                    <kbd class="tutorial-ui">Original phrase</kbd>. Tick
+                    <kbd class="tutorial-ui is-wrap"
+                      >Preserve special characters and accents</kbd
+                    >
+                    to keep digits, punctuation and accents as typed (only A–Z
+                    and a–z get ciphered). Leave it off and accents become plain
+                    letters while digits and symbols are dropped.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui">Configure shifts</kbd>.</strong
+                    >
+                    Every word gets its own row with two boxes: one shift for its
+                    <span class="tutorial-odd"
+                      ><span class="swatch odd" aria-hidden="true"></span
+                      >odd</span
+                    >
+                    letters (1st, 3rd, 5th…) and one for its
+                    <span class="tutorial-even"
+                      ><span class="swatch even" aria-hidden="true"></span
+                      >even</span
+                    >
+                    letters (2nd, 4th, 6th…).
+                  </li>
+                  <li>
+                    <strong>Set the shifts.</strong> A shift is how many places a
+                    letter moves forward in the alphabet, from 0 to 25, wrapping
+                    around after Z. Type a number, or drag the thin track under
+                    any box. In the <em>live preview</em>, each original letter
+                    sits above the letter it becomes.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui is-solid">Encode</kbd>.</strong
+                    >
+                    You get the encoded message, the word lengths and the shifts
+                    used. Keep all three: the decoder needs them.
+                  </li>
+                </ol>
+                <p class="tutorial-note">
+                  <strong>How it works.</strong> Each word is ciphered on its
+                  own, then the words are interleaved: the first letter of every
+                  word, then the second letter of every word, and so on, as one
+                  block without spaces. That is why decoding also needs the word
+                  lengths.
+                </p>
+              </div>
+
+              <figure class="tutorial-example">
+                <figcaption class="tutorial-eyebrow">// worked example</figcaption>
+                <p class="tutorial-ex-label">Original phrase</p>
+                <p class="tutorial-ex-phrase">Stuck in the rooms</p>
+                <div class="tutorial-tiles">
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 1: Stuck becomes Fshbx"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">1</span>
+                    <span class="tutorial-tile odd"><i>S</i><b>F</b></span>
+                    <span class="tutorial-tile even"><i>t</i><b>s</b></span>
+                    <span class="tutorial-tile odd"><i>u</i><b>h</b></span>
+                    <span class="tutorial-tile even"><i>c</i><b>b</b></span>
+                    <span class="tutorial-tile odd"><i>k</i><b>x</b></span>
+                  </div>
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 2: in becomes sv"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">2</span>
+                    <span class="tutorial-tile odd"><i>i</i><b>s</b></span>
+                    <span class="tutorial-tile even"><i>n</i><b>v</b></span>
+                  </div>
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 3: the becomes cyn"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">3</span>
+                    <span class="tutorial-tile odd"><i>t</i><b>c</b></span>
+                    <span class="tutorial-tile even"><i>h</i><b>y</b></span>
+                    <span class="tutorial-tile odd"><i>e</i><b>n</b></span>
+                  </div>
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 4: rooms becomes xvuty"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">4</span>
+                    <span class="tutorial-tile odd"><i>r</i><b>x</b></span>
+                    <span class="tutorial-tile even"><i>o</i><b>v</b></span>
+                    <span class="tutorial-tile odd"><i>o</i><b>u</b></span>
+                    <span class="tutorial-tile even"><i>m</i><b>t</b></span>
+                    <span class="tutorial-tile odd"><i>s</i><b>y</b></span>
+                  </div>
+                </div>
+                <p class="tutorial-ex-cap">
+                  Row 1 shifts its
+                  <span class="tutorial-odd">odd</span> letters by
+                  <span class="tutorial-odd">13</span> and its
+                  <span class="tutorial-even">even</span> letters by
+                  <span class="tutorial-even">25</span>. Every other row has its
+                  own pair.
+                </p>
+                <dl class="tutorial-console">
+                  <div>
+                    <dt>// encoded result</dt>
+                    <dd>Fscxsvyvhnubtxy</dd>
+                  </div>
+                  <div>
+                    <dt>// word lengths</dt>
+                    <dd>5, 2, 3, 5</dd>
+                  </div>
+                  <div>
+                    <dt>// shifts used (odd, even)</dt>
+                    <dd>[13, 25], [10, 8], [9, 17], [6, 7]</dd>
+                  </div>
+                </dl>
+              </figure>
+            </div>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-enc-adv">
+            <h3 class="tutorial-h" id="tut-enc-adv">Advanced functions</h3>
+            <p class="tutorial-p">
+              Click <kbd class="tutorial-ui">Configure shifts</kbd> and a
+              <strong>Quick Fill / Advanced Patterns</strong> panel appears under
+              the word rows, so you never have to type every shift by hand.
+            </p>
+            <dl class="tutorial-defs">
+              <div>
+                <dt>
+                  <kbd class="tutorial-ui">Odd Pattern</kbd>
+                  <kbd class="tutorial-ui">Even Pattern</kbd>
+                  <kbd class="tutorial-ui is-solid">Apply</kbd>
+                </dt>
+                <dd>
+                  Type one number (<code>2</code>) to use it for every word, or
+                  a comma-separated list (<code>1,4</code>) to cycle through the
+                  words in order, then press Apply. Apply only fills boxes that
+                  are empty or 0, so shifts you already set are kept.
+                </dd>
+              </div>
+              <div>
+                <dt><kbd class="tutorial-ui">🎲</kbd></dt>
+                <dd>
+                  Random. Fills every odd and even box with a random number from
+                  0 to 25.
+                </dd>
+              </div>
+              <div>
+                <dt><kbd class="tutorial-ui">Reset Shifts</kbd></dt>
+                <dd>Sets every box back to 0.</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd class="tutorial-ui">ROT13</kbd>
+                  <kbd class="tutorial-ui">Fibonacci</kbd>
+                  <kbd class="tutorial-ui">Progressive (+1,+2)</kbd>
+                </dt>
+                <dd>
+                  Presets: one click fills every box, replacing what is there.
+                  <strong>ROT13</strong> puts 13 everywhere.
+                  <strong>Fibonacci</strong> walks 1, 2, 3, 5, 8, 13, 21 across
+                  the words, with even letters one step ahead of odd ones.
+                  <strong>Progressive</strong> starts at 1 for odd letters and 2
+                  for even letters, then adds one with each word.
+                </dd>
+              </div>
+              <div>
+                <dt>Cipher Strength</dt>
+                <dd>
+                  The bar under the live preview rates how varied your shifts
+                  are. The more different numbers across all the boxes, the
+                  fuller it gets:
+                  <span class="tutorial-dot is-weak" aria-hidden="true"></span
+                  >Weak,
+                  <span class="tutorial-dot is-medium" aria-hidden="true"></span
+                  >Medium,
+                  <span class="tutorial-dot is-strong" aria-hidden="true"></span
+                  >Strong. One number everywhere, like ROT13, rates Weak. It is
+                  a quick guide, not real security.
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-enc-export">
+            <h3 class="tutorial-h" id="tut-enc-export">Export and copy</h3>
+            <p class="tutorial-p">
+              After <kbd class="tutorial-ui is-solid">Encode</kbd> the result
+              shows up in three boxes: the encoded message, the word lengths and
+              the shifts used. There are three ways to take it with you.
+            </p>
+            <ul class="tutorial-cards" role="list">
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">One piece at a time</h4>
+                <p>
+                  Every box has a small
+                  <kbd class="tutorial-ui is-console">copy</kbd> button. It reads
+                  <samp>copied!</samp> for a moment when it worked. Handy when
+                  you only need one piece.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Everything at once</h4>
+                <p>
+                  <kbd class="tutorial-ui is-solid">Copy All Data</kbd> puts all
+                  three on your clipboard as one labelled block (Message,
+                  Lengths, Shifts). The decoder's
+                  <kbd class="tutorial-ui is-green">Paste Data 📋</kbd> button
+                  reads exactly that.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">As a link</h4>
+                <p>
+                  <kbd class="tutorial-ui">Copy link 🔗</kbd> copies an address
+                  that re-opens the message and the word lengths in the Decoder,
+                  and the shifts too while
+                  <em>include shifts in link</em> is ticked. Untick it to send
+                  the shifts some other way. The link also appears in a field
+                  under the button.
+                </p>
+              </li>
+            </ul>
+            <p class="tutorial-tip">
+              <strong>Want to test the round trip?</strong>
+              <kbd class="tutorial-ui is-green">Transfer to Decoder ⇄</kbd>
+              sends the message and the lengths to the decode.js tab. You add the
+              shifts there.
+            </p>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-enc-log">
+            <div class="tutorial-log-head">
+              <h3 class="tutorial-h" id="tut-enc-log">Update Log</h3>
+              <span class="tutorial-version">v1.11.0</span>
+            </div>
+            <p class="tutorial-log-note">
+              The same notes open from the v1.11.0 button at the top of the app.
+            </p>
+            <ul class="tutorial-log" role="list">
+              <li class="tutorial-log-item">
+                <span class="tutorial-log-meta" aria-hidden="true">01</span>
+                <strong class="tutorial-log-title">Live Letter Tiles</strong>
+                <span class="tutorial-log-desc"
+                  >A preview shows every letter turning into its ciphered (or
+                  decoded) letter as you type.</span
+                >
+              </li>
+              <li class="tutorial-log-item">
+                <span class="tutorial-log-meta" aria-hidden="true">02</span>
+                <strong class="tutorial-log-title">Drag-to-set Shifts</strong>
+                <span class="tutorial-log-desc"
+                  >Drag the thin track under any shift field to change it. The
+                  number fields work as before.</span
+                >
+              </li>
+              <li class="tutorial-log-item">
+                <span class="tutorial-log-meta" aria-hidden="true">03</span>
+                <strong class="tutorial-log-title">Share by Link</strong>
+                <span class="tutorial-log-desc"
+                  >Copy a link that re-opens the message and lengths (optionally
+                  the shifts) in the Decoder.</span
+                >
+              </li>
+              <li class="tutorial-log-item">
+                <span class="tutorial-log-meta" aria-hidden="true">04</span>
+                <strong class="tutorial-log-title">Two-pane Layout</strong>
+                <span class="tutorial-log-desc"
+                  >On wide screens the output stays visible beside the
+                  form.</span
+                >
+              </li>
+              <li class="tutorial-log-item">
+                <span class="tutorial-log-meta" aria-hidden="true">05</span>
+                <strong class="tutorial-log-title">History Drawer</strong>
+                <span class="tutorial-log-desc"
+                  >A side drawer on wide screens, a popover on phones.</span
+                >
+              </li>
+              <li class="tutorial-log-item is-fix">
+                <span class="tutorial-log-meta" aria-hidden="true"
+                  ><span>06</span><span class="tutorial-tag">fix</span></span
+                >
+                <strong class="tutorial-log-title">Fixes</strong>
+                <span class="tutorial-log-desc"
+                  >Paste Data now applies the shifts, and hint text meets
+                  contrast guidelines.</span
+                >
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- ---------- TUTORIAL PANEL: decode.js ---------- -->
+        <div
+          class="tutorial-panel"
+          role="tabpanel"
+          id="tutorial-panel-decode"
+          aria-labelledby="tutorial-tab-decode"
+          tabindex="0"
+          hidden
+        >
+          <section class="tutorial-section" aria-labelledby="tut-dec-guide">
+            <h3 class="tutorial-h" id="tut-dec-guide">Decoding guide</h3>
+            <div class="tutorial-split">
+              <div>
+                <p class="tutorial-p">
+                  Decoding runs the encoder backwards. It needs the same three
+                  things the encoder gave you: the
+                  <strong>encoded message</strong>, the
+                  <strong>word lengths</strong> and the <strong>shifts</strong>
+                  (an odd and an even number for every word).
+                </p>
+                <ol class="tutorial-steps" role="list">
+                  <li>
+                    <strong>Fill in the message and the lengths.</strong> Use any
+                    of the four methods below. A shared link or
+                    <kbd class="tutorial-ui is-green">Paste Data 📋</kbd> also
+                    builds the shift rows and, when the shifts are included,
+                    fills them in for you.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui">Configure shifts</kbd>.</strong
+                    >
+                    One row appears for each word in the lengths. Skip this step
+                    if a link or Paste Data already did it.
+                  </li>
+                  <li>
+                    <strong>Check the shifts.</strong> Every word needs its odd
+                    and its even shift, from 0 to 25, exactly as used when
+                    encoding. The live preview shows each letter turning back
+                    into the original.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui is-solid">Decode</kbd>.</strong
+                    >
+                    The original phrase appears in the console, with its own
+                    copy button.
+                  </li>
+                </ol>
+                <p class="tutorial-note">
+                  <strong>If something looks off.</strong> The message must have
+                  exactly as many characters as the word lengths add up to.
+                  Gibberish means a shift or a length differs from the one used
+                  to encode. If you edit the lengths after configuring, the shift
+                  rows fade: click Configure shifts again.
+                </p>
+              </div>
+
+              <figure class="tutorial-example">
+                <figcaption class="tutorial-eyebrow">// worked example</figcaption>
+                <dl class="tutorial-console">
+                  <div>
+                    <dt>// encoded message</dt>
+                    <dd>Fscxsvyvhnubtxy</dd>
+                  </div>
+                  <div>
+                    <dt>// original word lengths</dt>
+                    <dd>5, 2, 3, 5</dd>
+                  </div>
+                  <div>
+                    <dt>// shifts (odd, even)</dt>
+                    <dd>[13, 25], [10, 8], [9, 17], [6, 7]</dd>
+                  </div>
+                </dl>
+                <p class="tutorial-ex-arrow" aria-hidden="true">↓ Decode</p>
+                <dl class="tutorial-console">
+                  <div>
+                    <dt>// original phrase</dt>
+                    <dd>Stuck in the rooms</dd>
+                  </div>
+                </dl>
+              </figure>
+            </div>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-dec-methods">
+            <h3 class="tutorial-h" id="tut-dec-methods">
+              Four ways to fill in the decoder
+            </h3>
+            <p class="tutorial-p">
+              Pick whichever fits how the message reached you.
+            </p>
+            <ol class="tutorial-methods" role="list">
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Open a shared link</h4>
+                <p>
+                  Open a link made with
+                  <kbd class="tutorial-ui">Copy link 🔗</kbd>. The page jumps
+                  straight to decode.js and fills in the message and the word
+                  lengths, plus the shifts if the link carried them. Then press
+                  <kbd class="tutorial-ui is-solid">Decode</kbd>. If the shifts
+                  were left out, type them in first.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Use Paste Data 📋</h4>
+                <p>
+                  In the encoder, click
+                  <kbd class="tutorial-ui is-solid">Copy All Data</kbd>. Then, in
+                  the decoder, click
+                  <kbd class="tutorial-ui is-green">Paste Data 📋</kbd>: it fills
+                  in the message and the lengths, builds the rows and applies the
+                  shifts in one go. Your browser may ask permission to read the
+                  clipboard.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Paste block by block</h4>
+                <p>
+                  Copy each box with its small
+                  <kbd class="tutorial-ui is-console">copy</kbd> button. Paste
+                  the encoded result into
+                  <kbd class="tutorial-ui">Encoded message</kbd> and the word
+                  lengths into
+                  <kbd class="tutorial-ui">Original word lengths</kbd>, then
+                  click <kbd class="tutorial-ui">Configure shifts</kbd>. Enter
+                  the pairs from the shifts box in the rows: each [odd, even]
+                  pair belongs to the row with the same number.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Type everything by hand</h4>
+                <p>
+                  Type the encoded message, then the word lengths separated by
+                  commas (like <code>5, 2, 3, 5</code>), click
+                  <kbd class="tutorial-ui">Configure shifts</kbd> and fill in
+                  each row. Press Enter, or type two digits, to jump to the next
+                  box.
+                </p>
+              </li>
+            </ol>
+          </section>
+        </div>
+      </div>
+    </section>
 
     <!-- === FOOTER === -->
     <!-- The <footer> tag is semantically used for footers. It does not change the look, but improves SEO and structure. -->
@@ -4178,6 +5395,146 @@ SOFTWARE.
         addEventListener("hashchange", importHash);
         importHash();
         refresh();
+      })();
+    </script>
+
+    <script>
+      /* =========================================================================
+         TUTORIAL TABS ("How do I use this?")
+         Fully isolated from the encoder / decoder tabs:
+         - it only looks at .tutorial-* elements and data-tutorial-tab,
+         - it never reads or toggles .tab-btn, .panel or .active,
+         - everything lives inside this IIFE, so it creates no globals.
+         Motion rules (SKILL.md): a mouse press switches instantly and animates,
+         keyboard changes are instant (no motion on keyboard-driven actions), and
+         reduced motion keeps only a short fade.
+         ========================================================================= */
+      (() => {
+        const root = document.getElementById("tutorial");
+        if (!root) return;
+
+        const bar = root.querySelector(".tutorial-tabs");
+        const tabs = [...root.querySelectorAll(".tutorial-tab-btn")];
+        const faces = [...root.querySelectorAll(".tutorial-tab-face")];
+        const windowEl = root.querySelector(".tutorial-tabs-active");
+        const stage = root.querySelector(".tutorial-panels");
+        const panelOf = (tab) =>
+          document.getElementById("tutorial-panel-" + tab.dataset.tutorialTab);
+        const reduced = () =>
+          matchMedia("(prefers-reduced-motion: reduce)").matches;
+        /* Same strong ease-out token the CSS uses (--ease-out), read once for WAAPI. */
+        const EASE_OUT =
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--ease-out")
+            .trim() || "cubic-bezier(0.23, 1, 0.32, 1)";
+
+        let current = Math.max(
+          0,
+          tabs.findIndex((t) => t.getAttribute("aria-selected") === "true"),
+        );
+        let tween = null; // the running height animation, if any
+
+        /* Clips the "selected" copy of the tab list to the selected tab.
+           Measured on the copy's own faces: they never carry the press scale,
+           and getBoundingClientRect keeps sub-pixel widths. */
+        function placeWindow(snap) {
+          const box = windowEl.getBoundingClientRect();
+          if (!box.width) return;
+          const f = faces[current].getBoundingClientRect();
+          const left = (f.left - box.left).toFixed(2);
+          const right = (box.right - f.right).toFixed(2);
+          if (snap) windowEl.style.transition = "none";
+          windowEl.style.clipPath = `inset(0 ${right}px 0 ${left}px)`;
+          if (snap) {
+            void windowEl.offsetWidth; // commit the new clip before transitions come back
+            windowEl.style.transition = "";
+          }
+        }
+
+        /* Switches tab. animate = false for the keyboard and for reduced motion. */
+        function select(next, animate) {
+          if (next === current) return;
+          const motion = animate && !reduced();
+
+          /* Start the height tween from what is on screen right now, even mid-tween. */
+          const from = stage.getBoundingClientRect().height;
+          if (tween) {
+            const old = tween;
+            tween = null;
+            old.cancel();
+          }
+          stage.classList.remove("is-resizing");
+
+          panelOf(tabs[current]).hidden = true;
+          panelOf(tabs[next]).hidden = false;
+          tabs.forEach((t, i) => {
+            t.setAttribute("aria-selected", String(i === next));
+            t.tabIndex = i === next ? 0 : -1;
+          });
+          current = next;
+          placeWindow(!motion);
+
+          if (!motion) return;
+          /* The panels differ a lot in height; tween the box so the footer glides instead of jumping. */
+          const to = stage.getBoundingClientRect().height;
+          if (Math.abs(to - from) < 2) return;
+          stage.classList.add("is-resizing");
+          const anim = stage.animate(
+            [{ height: from + "px" }, { height: to + "px" }],
+            { duration: 200, easing: EASE_OUT },
+          );
+          tween = anim;
+          anim.onfinish = anim.oncancel = () => {
+            if (tween !== anim) return;
+            tween = null;
+            stage.classList.remove("is-resizing");
+          };
+        }
+
+        tabs.forEach((tab, i) => {
+          /* A mouse acts on press, not on release (instant response). */
+          tab.addEventListener("pointerdown", (e) => {
+            if (e.pointerType === "mouse" && e.button === 0) select(i, true);
+          });
+          /* Touch, pen and keyboard act on click. detail === 0 means Enter / Space (no motion). */
+          tab.addEventListener("click", (e) => select(i, e.detail !== 0));
+        });
+
+        /* Roving tabindex: arrows, Home and End move focus and select (automatic activation). */
+        bar.addEventListener("keydown", (e) => {
+          const i = tabs.indexOf(document.activeElement);
+          if (i < 0) return;
+          const last = tabs.length - 1;
+          const target = {
+            ArrowRight: i === last ? 0 : i + 1,
+            ArrowLeft: i === 0 ? last : i - 1,
+            Home: 0,
+            End: last,
+          }[e.key];
+          if (target === undefined) return;
+          e.preventDefault();
+          tabs[target].focus();
+          select(target, false);
+        });
+
+        /* Keep the window glued to the tab when the layout or the font changes. */
+        const resync = () => placeWindow(true);
+        if ("ResizeObserver" in window) {
+          const ro = new ResizeObserver(resync);
+          ro.observe(bar);
+          faces.forEach((f) => ro.observe(f));
+        } else {
+          addEventListener("resize", resync);
+        }
+        if (document.fonts && document.fonts.ready)
+          document.fonts.ready.then(resync);
+        resync();
+
+        /* Entrance transitions arm only after the first paint, so the visible
+           panel does not replay on load. */
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => root.setAttribute("data-ready", "")),
+        );
       })();
     </script>
   </body>
