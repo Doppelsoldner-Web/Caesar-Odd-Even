@@ -25,3 +25,6 @@ An interactive web application built with HTML, CSS, and JavaScript for text enc
 ## 📄 License
 
 This project is under the **MIT License** (see the `LICENSE` file for more details).
+## Credits
+This project uses the Minecraft TrueType font created by [@tryashtar](https://github.com) from their [minecraft-ttf](https://github.com/minecraft-ttf) repository.
+
