@@ -46,6 +46,60 @@ SOFTWARE.
     -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!--
+      Theme setup (v1.12.0). These two metas tell the browser the page supports both schemes
+      (native form controls, scrollbars, mobile address bar) and the script right below picks the
+      theme BEFORE the first paint, so a dark-mode visitor never sees a white flash.
+      Order of choice: the theme saved by the toggle button, otherwise the system setting.
+    -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ece9e2" />
+    <script>
+      (function () {
+        var theme = "light";
+        try {
+          var saved = localStorage.getItem("cipherTheme");
+          if (saved === "light" || saved === "dark") theme = saved;
+          else if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          )
+            theme = "dark";
+        } catch (e) {}
+        document.documentElement.setAttribute("data-theme", theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#000000" : "#ece9e2");
+      })();
+    </script>
+
+    <!--
+      FONT CREDITS
+      Font ..... Minecraft Default: MinecraftDefault-Regular / Bold / Italic / BoldItalic (.ttf), in the Assets/ folder
+      Made by .. tryashtar  (https://github.com/tryashtar)
+      Project .. Minecraft TTF v1.6  https://github.com/tryashtar/minecraft-ttf/releases#release-v1.6
+      The glyph shapes are Minecraft's default text font; the font files' own metadata reads
+      "Copyright (c) 2009 Mojang AB".
+    -->
+
+    <!--
+      Early font fetch: Regular and Bold carry nearly all the text, so on a real server (GitHub Pages) the
+      browser starts downloading them before the CSS asks, which avoids a visible swap from the fallback font.
+      It is skipped on file:// pages, where browsers refuse CORS-mode font requests (the @font-face rules
+      still load the fonts there, just a moment later).
+    -->
+    <script>
+      if (/^https?:$/.test(location.protocol))
+        ["Regular", "Bold"].forEach(function (face) {
+          var link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "font";
+          link.type = "font/ttf";
+          link.crossOrigin = "anonymous";
+          link.href = "Assets/MinecraftDefault-" + face + ".ttf";
+          document.head.appendChild(link);
+        });
+    </script>
+
     <!-- The <title> tag sets the name of the tab in the browser. -->
     <title>Odd/Even Cipher — Encoder &amp; Decoder</title>
 
@@ -56,36 +110,89 @@ SOFTWARE.
     This is where the visual styling (CSS) starts. CSS controls colors, positions, fonts and animations.
     -->
     <style>
+      /* =========================================================================
+         FONT: Minecraft Default (v1.13.0)
+         Four faces from the "Minecraft TTF" project by tryashtar, v1.6:
+         https://github.com/tryashtar/minecraft-ttf/releases#release-v1.6
+         The files live in the Assets/ folder next to this page (the folder name is
+         case-sensitive on GitHub Pages). The glyphs are the game's own text font.
+         Weights: 400 and 500 use Regular, 600 and 700 use Bold, so the existing
+         font-weight rules keep working without the browser faking a bold.
+         ========================================================================= */
+      @font-face {
+        font-family: "MinecraftDefault";
+        src: url("Assets/MinecraftDefault-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "MinecraftDefault";
+        src: url("Assets/MinecraftDefault-Bold.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "MinecraftDefault";
+        src: url("Assets/MinecraftDefault-Italic.ttf") format("truetype");
+        font-weight: 400;
+        font-style: italic;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "MinecraftDefault";
+        src: url("Assets/MinecraftDefault-BoldItalic.ttf") format("truetype");
+        font-weight: 700;
+        font-style: italic;
+        font-display: swap;
+      }
+
       /* 
         The :root pseudo-class selects the root of the document (the <html> element).
         Here we define "CSS Variables" (Custom Properties), which start with --.
         This lets us reuse colors throughout the file and makes switching themes easier.
       */
       :root {
-        /* OFF WHITE THEME */
-        --canvas: #f0eee9;
-        --paper: #fbfaf8;
-        --ink: #2c2925;
-        --muted: #6e6962;
-        --border: #e6e3dc;
-        --odd: #b0224f;
-        --odd-soft: #f8e6ee;
-        --even: #0b615a;
-        --even-soft: #e1f0ee;
+        /* OFF WHITE THEME (v1.12.0 refinement)
+           Two surface levels: canvas (page, input wells, tab strip) sits under paper (cards).
+           Every text and accent pair below clears WCAG AA (4.5:1); field outlines clear 3:1. */
+        --canvas: #ece9e2;
+        --paper: #fdfcfa;
+        --ink: #1f1c19;
+        --muted: #5b564f;
+        --border: #d9d5cb; /* hairlines and dividers */
+        --border-strong: #8a857a; /* outlines of fields and ghost buttons */
+        --odd: #ae1f4b;
+        --odd-soft: #f9e5ed;
+        --on-odd: #ffffff; /* text on a solid --odd surface */
+        --even: #0a5f58;
+        --even-soft: #dcefea;
+        --on-even: #ffffff; /* text on a solid --even surface */
         --error: #b3261e;
-        --error-soft: #fbeaea;
+        --error-soft: #fbe8e5;
         --warn: #f59e0b;
         --success: #10b981;
-        --console-bg: #2c2925;
+        --console-bg: #25221e;
         --console-text: #fbfaf8;
-        --console-border: #44403c;
+        --console-border: #403b35;
+        --shadow-card:
+          0 1px 2px rgba(20, 24, 32, 0.05),
+          0 12px 32px -16px rgba(20, 24, 32, 0.14);
+        --shadow-pop: 0 12px 32px -8px rgba(20, 24, 32, 0.2);
+        --shadow-drawer: -18px 0 40px -16px rgba(20, 24, 32, 0.28);
         --radius: 10px;
+        /* Minecraft Default leads both stacks; the old fonts only fill glyphs it does not have. */
         --mono:
-          "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo,
-          Consolas, "Liberation Mono", monospace;
+          "MinecraftDefault", "JetBrains Mono", "Fira Code", ui-monospace,
+          SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
         --sans:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-          Arial, sans-serif;
+          "MinecraftDefault", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Helvetica, Arial, sans-serif;
+        /* Minecraft's x-height is only 0.42 em (a typical UI font has about 0.52), so at the same
+           font-size it reads about a fifth smaller. font-size-adjust scales it back up to this
+           x-height ratio everywhere at once; lower the number to shrink all text, raise it to grow. */
+        --font-adjust: 0.52;
       }
 
       /* 
@@ -94,20 +201,32 @@ SOFTWARE.
         This is what allows the instant switch between the light and dark modes.
       */
       [data-theme="dark"] {
-        /* AMOLED THEME */
+        /* AMOLED THEME (v1.12.0 refinement)
+           The page stays pure black for OLED screens and for recessed wells (inputs, tab strip),
+           while cards are lifted to a dark slate so they read as a real surface with a visible edge. */
         --canvas: #000000;
-        --paper: #030712;
-        --ink: #e2e8f0;
-        --muted: #64748b;
-        --border: #0f172a;
-        --odd: #ff6b9e;
-        --odd-soft: #4a1c2d;
-        --even: #2ebc9f;
-        --even-soft: #0e3f36;
-        --error: #f85149;
-        --error-soft: #4a1c1e;
-        --console-bg: #020617;
-        --console-border: #1e293b;
+        --paper: #0c1018;
+        --ink: #e6ebf2;
+        --muted: #94a3b8;
+        --border: #212a39;
+        --border-strong: #586780;
+        --odd: #ff7ba8;
+        --odd-soft: #3d1728;
+        --on-odd: #220a14; /* dark text on the bright pink: white would only reach 2.7:1 */
+        --even: #3ed3b4;
+        --even-soft: #0b3a33;
+        --on-even: #04211c;
+        --error: #ff8179;
+        --error-soft: #3b1719;
+        --console-bg: #05080d;
+        --console-text: #f4f6fa;
+        --console-border: #273246;
+        /* On black a drop shadow is invisible, so cards get a lit top edge instead. */
+        --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        --shadow-pop:
+          0 16px 40px -12px rgba(0, 0, 0, 0.8),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        --shadow-drawer: -18px 0 40px -16px rgba(0, 0, 0, 0.8);
       }
 
       /* 
@@ -117,6 +236,30 @@ SOFTWARE.
       */
       * {
         box-sizing: border-box;
+      }
+
+      /* Whole interface in the new font (v1.13.0).
+         Form controls and code-like tags ignore the page font unless told otherwise, and the UA
+         `font` shorthand also resets font-size-adjust, so both are handed down explicitly.
+         font-synthesis: none stops the browser from faking a second bold on top of the real one. */
+      html {
+        font-family: var(--sans);
+        font-size-adjust: var(--font-adjust);
+        font-synthesis: none;
+      }
+      button,
+      input,
+      textarea,
+      select {
+        font-family: inherit;
+        font-size-adjust: inherit;
+      }
+      code,
+      kbd,
+      samp,
+      pre {
+        font-family: var(--mono);
+        font-size-adjust: inherit;
       }
 
       body {
@@ -143,7 +286,7 @@ SOFTWARE.
         ); /* Rounds the corners using the variable */
         position: relative; /* Lets 'absolute' elements be positioned inside this box */
         overflow: visible;
-        box-shadow: 0 1px 2px rgba(20, 24, 32, 0.05); /* Subtle shadow for depth */
+        box-shadow: var(--shadow-card); /* Depth: a soft drop shadow in light, a lit top edge in dark */
       }
 
       /* HEADER & TOP BUTTONS */
@@ -159,7 +302,7 @@ SOFTWARE.
       .icon-btn,
       .update-btn {
         background: var(--odd);
-        color: #fff;
+        color: var(--on-odd);
         border: none;
         padding: 4px 10px;
         border-radius: 6px;
@@ -175,9 +318,11 @@ SOFTWARE.
       }
       .icon-btn.dark-toggle {
         background: var(--ink);
+        color: var(--paper); /* always the opposite of --ink, so it reads in both themes */
       }
       .icon-btn.history-toggle {
         background: var(--muted);
+        color: var(--paper);
       }
 
       /* The :hover pseudo-class is activated when the user moves the mouse over the element */
@@ -196,7 +341,7 @@ SOFTWARE.
         border-radius: 8px;
         padding: 16px;
         width: 320px;
-        box-shadow: 0 8px 24px rgba(27, 30, 39, 0.12);
+        box-shadow: var(--shadow-pop);
 
         /* Start of the animation */
         visibility: hidden;
@@ -319,7 +464,7 @@ SOFTWARE.
         font-family: var(--sans);
         color: var(--ink);
         background: var(--canvas);
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         border-radius: 8px;
         resize: vertical; /* Lets the user change the height of the box, but not its width */
       }
@@ -363,19 +508,19 @@ SOFTWARE.
       .btn.ghost {
         background: transparent;
         color: var(--ink);
-        border-color: var(--border);
+        border-color: var(--border-strong);
         font-weight: 500;
       }
       .btn.swap {
         background: var(--even);
         border-color: var(--even);
-        color: #fff;
+        color: var(--on-even);
         margin-left: auto; /* Pushes this specific button to the far right in the flexbox */
       }
       .btn.paste-btn {
         background: var(--even);
         border-color: var(--even);
-        color: #fff;
+        color: var(--on-even);
       }
       .btn.sm {
         padding: 6px 12px;
@@ -489,7 +634,7 @@ SOFTWARE.
         width: 72px;
         padding: 8px 10px;
         border-radius: 6px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         font-family: var(--mono);
         font-size: 14px;
         background: var(--canvas);
@@ -540,7 +685,7 @@ SOFTWARE.
         width: 100%;
         padding: 8px 10px;
         border-radius: 6px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         font-family: var(--mono);
         font-size: 14px;
         background: var(--paper);
@@ -652,6 +797,8 @@ SOFTWARE.
       }
 
       .app-footer {
+        flex-wrap: wrap; /* lets the credit line sit under the three footer items */
+        row-gap: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -661,6 +808,31 @@ SOFTWARE.
         font-size: 12px;
         color: var(--muted);
         font-family: var(--mono);
+      }
+
+      /* Font credit: one centered line under the footer items. The links are underlined so they read as links
+         in a font where color alone would be a weak cue. */
+      .footer-credits {
+        flex: 1 0 100%;
+        margin: 0;
+        text-align: center;
+        line-height: 1.6;
+        text-wrap: balance;
+      }
+      .footer-credits a {
+        color: var(--ink);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+      .footer-credits a:focus-visible {
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .footer-credits a:hover {
+          color: var(--odd);
+        }
       }
 
       /* =====================================================================
@@ -914,6 +1086,19 @@ SOFTWARE.
       [data-theme="dark"] {
         color-scheme: dark;
       }
+      /* Theme polish (v1.12.0): small details the browser would otherwise leave in its own colors. */
+      ::selection {
+        background: color-mix(in srgb, var(--odd) 30%, transparent);
+        color: var(--ink);
+      }
+      textarea::placeholder,
+      input::placeholder {
+        color: color-mix(in srgb, var(--muted) 88%, var(--canvas));
+        opacity: 1; /* Firefox dims placeholders by default */
+      }
+      input[type="checkbox"] {
+        accent-color: var(--odd);
+      }
       /* Critically damped spring (no overshoot) sampled as linear(); cubic-bezier remains the fallback */
       @supports (transition-timing-function: linear(0, 1)) {
         :root {
@@ -951,12 +1136,7 @@ SOFTWARE.
       }
 
       .app {
-        box-shadow:
-          0 1px 2px rgba(20, 24, 32, 0.05),
-          0 12px 32px -16px rgba(20, 24, 32, 0.14);
-      }
-      [data-theme="dark"] .app {
-        box-shadow: none;
+        box-shadow: var(--shadow-card);
       }
 
       /* Typography: tight tracking on display, calm leading on body, no code ligatures in cipher text */
@@ -973,7 +1153,7 @@ SOFTWARE.
         font-variant-ligatures: none;
       }
       .prompt {
-        letter-spacing: -0.01em;
+        letter-spacing: 0; /* pixel font: no negative tracking */
         line-height: 1.25;
       }
       .tagline {
@@ -1115,7 +1295,7 @@ SOFTWARE.
         backdrop-filter: blur(0);
         transform: scale(0.94);
         transform-origin: 90% 0;
-        box-shadow: 0 12px 32px -8px rgba(20, 24, 32, 0.2);
+        box-shadow: var(--shadow-pop);
         transition:
           opacity 0.18s var(--anim-ease),
           transform 0.3s var(--anim-ease),
@@ -1207,6 +1387,7 @@ SOFTWARE.
       @media (prefers-contrast: more) {
         :root {
           --border: color-mix(in srgb, var(--ink) 45%, transparent);
+          --border-strong: var(--ink);
         }
         .floating-box {
           border-color: var(--ink);
@@ -1220,9 +1401,6 @@ SOFTWARE.
       /* Hint text of the new UI is kept at 4.5:1 or better in both themes. */
       :root {
         --muted-text: var(--muted);
-      }
-      [data-theme="dark"] {
-        --muted-text: #7587a0;
       }
       .pane {
         min-width: 0;
@@ -1366,7 +1544,7 @@ SOFTWARE.
         width: 100%;
         margin-top: 8px;
         padding: 8px 10px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         border-radius: 6px;
         background: var(--canvas);
         color: var(--ink);
@@ -1421,7 +1599,7 @@ SOFTWARE.
           border-radius: 0;
           transform: translateX(100%);
           transform-origin: right center;
-          box-shadow: -18px 0 40px -16px rgba(20, 24, 32, 0.28);
+          box-shadow: var(--shadow-drawer);
         }
         #historyBox.floating-box.show {
           transform: none;
@@ -1436,7 +1614,7 @@ SOFTWARE.
           width: 28px;
           height: 28px;
           padding: 0;
-          border: 1px solid var(--border);
+          border: 1px solid var(--border-strong);
           border-radius: 6px;
           background: transparent;
           color: var(--ink);
@@ -1650,12 +1828,7 @@ SOFTWARE.
         color: var(--ink);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        box-shadow:
-          0 1px 2px rgba(20, 24, 32, 0.05),
-          0 12px 32px -16px rgba(20, 24, 32, 0.14);
-      }
-      [data-theme="dark"] .tutorial {
-        box-shadow: none;
+        box-shadow: var(--shadow-card);
       }
       /* The tutorial hangs closer to the main card than the page edge does. */
       .app:has(+ .tutorial) {
@@ -1673,7 +1846,7 @@ SOFTWARE.
         font-size: 20px;
         font-weight: 700;
         line-height: 1.25;
-        letter-spacing: -0.01em;
+        letter-spacing: 0; /* pixel font: no negative tracking */
         font-variant-ligatures: none;
         text-wrap: balance;
       }
@@ -1783,7 +1956,7 @@ SOFTWARE.
         font-size: 16px;
         font-weight: 600;
         line-height: 1.3;
-        letter-spacing: -0.01em;
+        letter-spacing: 0; /* pixel font: no negative tracking */
         text-wrap: balance;
       }
       .tutorial-h::before {
@@ -2107,7 +2280,7 @@ SOFTWARE.
         font-size: 14.5px;
         font-weight: 600;
         line-height: 1.4;
-        letter-spacing: -0.005em;
+        letter-spacing: 0; /* pixel font: no negative tracking */
       }
       .tutorial-card p {
         margin: 0;
@@ -2181,25 +2354,237 @@ SOFTWARE.
         color: var(--muted-text);
         font-variant-numeric: tabular-nums;
       }
-      .tutorial-tag {
+      /* Change tags (v1.12.0). Told apart by form, not by hue: solid fill = new, solid outline = improved,
+         dashed outline = fix. The app's pink and teal stay reserved for odd and even letters. */
+      .tutorial-tag,
+      .rel-tag {
+        display: inline-block;
         padding: 1px 6px;
-        border: 1px dashed var(--border);
+        border: 1px solid var(--muted-text);
         border-radius: 4px;
-        font-size: 10.5px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.5;
         letter-spacing: 0.06em;
         text-transform: uppercase;
+        color: var(--muted-text);
+        font-variant-ligatures: none;
+      }
+      .tutorial-tag.is-new,
+      .rel-tag.is-new {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: var(--paper);
+      }
+      .tutorial-tag.is-improved,
+      .rel-tag.is-improved {
+        border-color: var(--ink);
+        color: var(--ink);
+      }
+      .tutorial-tag.is-fix,
+      .rel-tag.is-fix {
+        border-style: dashed;
       }
       .tutorial-log-title {
         font-size: 14.5px;
         font-weight: 600;
         line-height: 1.35;
-        letter-spacing: -0.005em;
+        letter-spacing: 0; /* pixel font: no negative tracking */
       }
       .tutorial-log-desc {
         font-size: 13.5px;
         line-height: 1.6;
         color: var(--muted-text);
         text-wrap: pretty;
+      }
+
+      /* ---- Release history inside the tutorial: one <details> per version, newest first ---- */
+      .tutorial-release + .tutorial-release {
+        margin-top: 6px;
+        border-top: 1px dashed var(--border);
+      }
+      .tutorial-release-sum {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        padding: 12px 4px;
+        border-radius: 8px;
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .tutorial-release-sum::-webkit-details-marker {
+        display: none;
+      }
+      .tutorial-release-sum:focus-visible {
+        outline-offset: -2px;
+      }
+      .tutorial-release-ver {
+        padding: 2px 8px;
+        background: var(--canvas);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-ligatures: none;
+      }
+      .tutorial-release-name {
+        font-size: 14.5px;
+        font-weight: 600;
+        line-height: 1.35;
+        letter-spacing: 0; /* pixel font: no negative tracking */
+      }
+      .tutorial-release-badge {
+        padding: 1px 7px;
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .tutorial-release-date,
+      .tutorial-release-count {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--muted-text);
+        font-variant-numeric: tabular-nums;
+      }
+      .tutorial-release-count {
+        margin-left: auto;
+      }
+      .tutorial-release-chev {
+        flex: none;
+        width: 7px;
+        height: 7px;
+        margin: 0 4px 0 2px;
+        border-right: 1.5px solid var(--muted-text);
+        border-bottom: 1.5px solid var(--muted-text);
+        transform: rotate(-45deg);
+        transition: transform 200ms var(--ease-out);
+      }
+      .tutorial-release[open] > .tutorial-release-sum .tutorial-release-chev {
+        transform: rotate(45deg);
+      }
+      .tutorial-release-blurb {
+        margin: 0 4px 14px;
+        max-width: 68ch;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--muted-text);
+        text-wrap: pretty;
+      }
+      .tutorial-release > .tutorial-log {
+        margin-bottom: 18px;
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .tutorial-release-sum:hover {
+          background: var(--canvas);
+        }
+      }
+      /* Smooth open and close where the browser can animate the hidden part of <details>;
+         everywhere else the panel simply appears, which is still correct. */
+      @supports (interpolate-size: allow-keywords) {
+        :root {
+          interpolate-size: allow-keywords;
+        }
+        @supports selector(details::details-content) {
+          .tutorial-release::details-content {
+            block-size: 0;
+            overflow: clip;
+            opacity: 0;
+            transition:
+              block-size 240ms var(--ease-out),
+              opacity 160ms var(--ease-out),
+              content-visibility 240ms allow-discrete;
+          }
+          .tutorial-release[open]::details-content {
+            block-size: auto;
+            opacity: 1;
+          }
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .tutorial-release-chev {
+          transition: none;
+        }
+        .tutorial-release::details-content {
+          transition: opacity 150ms ease !important;
+        }
+      }
+
+      /* ---- Release history inside the "Version notes" popover ---- */
+      .rel-box {
+        max-height: min(72vh, 480px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+      }
+      .rel + .rel {
+        margin-top: 18px;
+      }
+      .rel-h {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 2px 8px;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 14px;
+      }
+      .rel-name {
+        font-family: var(--sans);
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .rel-badge {
+        padding: 0 6px;
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        line-height: 1.6;
+      }
+      .rel-date {
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--muted-text);
+      }
+      .rel-blurb {
+        margin: 6px 0 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: var(--muted-text);
+      }
+      .rel-hr {
+        margin: 10px 0;
+        border: 0;
+        border-top: 1px dashed var(--border);
+      }
+      .rel-list {
+        display: grid;
+        gap: 7px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .rel-list strong {
+        color: var(--ink);
+      }
+      .rel-tag {
+        margin-right: 6px;
+        vertical-align: 1px;
       }
 
       .tutorial-split {
@@ -2365,91 +2750,28 @@ SOFTWARE.
         >
           🌙
         </button>
-        <!-- A container to keep the update box anchored to the v1.11.0 button -->
+        <!-- A container to keep the update box anchored to the version button -->
         <div style="display: contents">
+          <!-- The label ("v1.13.0") and the notes are written by the RELEASES script near the end of the page. -->
           <button
             id="updateLogBtn"
             class="update-btn"
             aria-label="Version notes"
             aria-expanded="false"
           >
-            v1.11.0
+            v1.13.0
           </button>
 
           <!-- The history and update notes are hidden by default and use the 'floating-box' class -->
-          <div id="updateLogBox" class="floating-box">
-            <!-- The <h3> tag represents a level-3 heading. -->
-            <h3 style="margin: 0; font-family: var(--mono); font-size: 14px">
-              UPDATE V1.11.0
-            </h3>
-            <hr
-              style="
-                border: 0;
-                border-top: 1px dashed var(--border);
-                margin: 10px 0;
-              "
-            />
-            <p
-              style="
-                margin: 8px 0 0 0;
-                font-size: 12px;
-                color: var(--muted);
-                line-height: 1.4;
-              "
-            >
-              • <strong>Live Letter Tiles:</strong> A preview shows every letter
-              turning into its ciphered (or decoded) letter as you type.<br />
-              • <strong>Drag-to-set Shifts:</strong> Drag the thin track under
-              any shift field to change it. The number fields work as before.<br />
-              • <strong>Share by Link:</strong> Copy a link that re-opens the
-              message and lengths (optionally the shifts) in the Decoder.<br />
-              • <strong>Two-pane Layout:</strong> On wide screens the output
-              stays visible beside the form.<br />
-              • <strong>History Drawer:</strong> A side drawer on wide screens, a
-              popover on phones.<br />
-              • <strong>Fixes:</strong> Paste Data now applies the shifts, and
-              hint text meets contrast guidelines.
-            </p>
-            <h3
-              style="
-                margin: 14px 0 0;
-                font-family: var(--mono);
-                font-size: 14px;
-              "
-            >
-              UPDATE V1.10.1
-            </h3>
-            <!-- The <hr> tag creates a horizontal line to visually separate content -->
-            <hr
-              style="
-                border: 0;
-                border-top: 1px dashed var(--border);
-                margin: 10px 0;
-              "
-            />
-            <p
-              style="
-                margin: 8px 0 0 0;
-                font-size: 12px;
-                color: var(--muted);
-                line-height: 1.4;
-              "
-            >
-              • <strong>Keyboard Navigation:</strong> Switch tabs with the Arrow
-              keys, Home and End, and move through the shift fields with the
-              Enter key.<br />
-              • <strong>Smart Auto-focus:</strong> Opening a panel automatically
-              moves focus to the first field.<br />
-              • <strong>Smooth Animations (WAAPI):</strong> Improved transitions
-              with physics-based spring damping curves for tabs and modals.<br />
-              • <strong>Dynamic Indicator:</strong> High-precision tab marker
-              positioning.<br />
-              • <strong>Accessibility &amp; Contrast:</strong> Improved support
-              for <i>prefers-reduced-transparency</i> and
-              <i>prefers-contrast</i>.<br />
-              • <strong>Form Validation:</strong> Error messages now clear
-              automatically as you type.
-            </p>
+          <div
+            id="updateLogBox"
+            class="floating-box rel-box"
+            role="region"
+            aria-label="Version notes"
+            tabindex="0"
+          >
+            <!-- Filled by renderPopover() from the RELEASES list: one block per version, newest first. -->
+            <div id="updateLogList"></div>
           </div>
         </div>
 
@@ -3083,62 +3405,16 @@ SOFTWARE.
           <section class="tutorial-section" aria-labelledby="tut-enc-log">
             <div class="tutorial-log-head">
               <h3 class="tutorial-h" id="tut-enc-log">Update Log</h3>
-              <span class="tutorial-version">v1.11.0</span>
+              <span class="tutorial-version" data-release-version>v1.13.0</span>
             </div>
             <p class="tutorial-log-note">
-              The same notes open from the v1.11.0 button at the top of the app.
+              Every release, newest first, with what is new, what improved and
+              what was fixed. The latest notes also open from the
+              <span data-release-version>v1.13.0</span> button at the top of the
+              app.
             </p>
-            <ul class="tutorial-log" role="list">
-              <li class="tutorial-log-item">
-                <span class="tutorial-log-meta" aria-hidden="true">01</span>
-                <strong class="tutorial-log-title">Live Letter Tiles</strong>
-                <span class="tutorial-log-desc"
-                  >A preview shows every letter turning into its ciphered (or
-                  decoded) letter as you type.</span
-                >
-              </li>
-              <li class="tutorial-log-item">
-                <span class="tutorial-log-meta" aria-hidden="true">02</span>
-                <strong class="tutorial-log-title">Drag-to-set Shifts</strong>
-                <span class="tutorial-log-desc"
-                  >Drag the thin track under any shift field to change it. The
-                  number fields work as before.</span
-                >
-              </li>
-              <li class="tutorial-log-item">
-                <span class="tutorial-log-meta" aria-hidden="true">03</span>
-                <strong class="tutorial-log-title">Share by Link</strong>
-                <span class="tutorial-log-desc"
-                  >Copy a link that re-opens the message and lengths (optionally
-                  the shifts) in the Decoder.</span
-                >
-              </li>
-              <li class="tutorial-log-item">
-                <span class="tutorial-log-meta" aria-hidden="true">04</span>
-                <strong class="tutorial-log-title">Two-pane Layout</strong>
-                <span class="tutorial-log-desc"
-                  >On wide screens the output stays visible beside the
-                  form.</span
-                >
-              </li>
-              <li class="tutorial-log-item">
-                <span class="tutorial-log-meta" aria-hidden="true">05</span>
-                <strong class="tutorial-log-title">History Drawer</strong>
-                <span class="tutorial-log-desc"
-                  >A side drawer on wide screens, a popover on phones.</span
-                >
-              </li>
-              <li class="tutorial-log-item is-fix">
-                <span class="tutorial-log-meta" aria-hidden="true"
-                  ><span>06</span><span class="tutorial-tag">fix</span></span
-                >
-                <strong class="tutorial-log-title">Fixes</strong>
-                <span class="tutorial-log-desc"
-                  >Paste Data now applies the shifts, and hint text meets
-                  contrast guidelines.</span
-                >
-              </li>
-            </ul>
+            <!-- Filled by renderTutorial() from the RELEASES list. -->
+            <div class="tutorial-releases" id="tutorialReleases"></div>
           </section>
         </div>
 
@@ -3293,9 +3569,27 @@ SOFTWARE.
     <!-- === FOOTER === -->
     <!-- The <footer> tag is semantically used for footers. It does not change the look, but improves SEO and structure. -->
     <footer class="app-footer">
-      <span class="footer-left">Odd/Even Cipher v1.11.0</span>
+      <span class="footer-left" data-release-footer>Odd/Even Cipher v1.13.0</span>
       <span class="footer-center">"Aqui é o Brasil"<br />—Dominic Toretto</span>
       <span class="footer-right">Doppelsoldner-Web</span>
+      <!-- Font credit (v1.13.0): the creator's name and the release page the files came from. -->
+      <p class="footer-credits">
+        Font:
+        <a
+          href="https://github.com/tryashtar/minecraft-ttf/releases#release-v1.6"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Minecraft TTF v1.6</a
+        >
+        by
+        <a
+          href="https://github.com/tryashtar"
+          target="_blank"
+          rel="noopener noreferrer"
+          >tryashtar</a
+        >
+        · glyphs © Mojang AB
+      </p>
     </footer>
 
     <!--
@@ -3361,17 +3655,57 @@ SOFTWARE.
       /* Array (list) with the theme options. */
       const themes = ["light", "dark"];
 
-      /* 
-         Tries to pull the saved theme. If it is empty/null, it becomes "light" through the OR (||) condition.
+      /*
+         v1.12.0: the theme follows the system (prefers-color-scheme) until the user presses the toggle.
+         Pressing it saves the choice, and from then on the saved theme wins over the system.
+         The head script already applied the right theme before the first paint; this code only has to
+         agree with it, so both use the same rule.
       */
-      let currentTheme = store.get("cipherTheme") || "light";
+      const systemDark =
+        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+      /* Browser UI color (mobile address bar) for each theme: the page canvas. */
+      const THEME_COLOR = { light: "#ece9e2", dark: "#000000" };
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
 
-      /* The if keeps the data consistent by rejecting unexpected values. */
-      if (!themes.includes(currentTheme)) currentTheme = "light"; // Avoids a bug if the user already has "beach" saved
+      function savedTheme() {
+        const v = store.get("cipherTheme");
+        return themes.includes(v) ? v : null; /* rejects empty or unexpected values */
+      }
+      function preferredTheme() {
+        return savedTheme() || (systemDark && systemDark.matches ? "dark" : "light");
+      }
+      let currentTheme = preferredTheme();
 
       /* DOM manipulation: sets the detected mode on the main HTML element. */
-      document.documentElement.setAttribute("data-theme", currentTheme);
-      updateThemeIcon(currentTheme);
+      function applyTheme(theme) {
+        currentTheme = theme;
+        document.documentElement.setAttribute("data-theme", theme);
+        if (themeMeta) themeMeta.setAttribute("content", THEME_COLOR[theme]);
+        updateThemeIcon(theme);
+      }
+      function animateThemeChange() {
+        document.documentElement.classList.add("theme-anim");
+        clearTimeout(window._themeT);
+        window._themeT = setTimeout(
+          () => document.documentElement.classList.remove("theme-anim"),
+          360,
+        );
+      }
+      applyTheme(currentTheme);
+
+      /* The system switched (for example, automatic dark mode at sunset) and the user never chose: follow it. */
+      if (systemDark) {
+        const onSystemChange = () => {
+          if (savedTheme()) return;
+          const next = preferredTheme();
+          if (next === currentTheme) return;
+          animateThemeChange();
+          applyTheme(next);
+        };
+        if (systemDark.addEventListener)
+          systemDark.addEventListener("change", onSystemChange);
+        else if (systemDark.addListener) systemDark.addListener(onSystemChange);
+      }
 
       /*
          Function that updates the button
@@ -3402,17 +3736,10 @@ SOFTWARE.
       themeBtn.addEventListener("click", () => {
         const currentIndex = themes.indexOf(currentTheme);
         const nextIndex = (currentIndex + 1) % themes.length;
-        currentTheme = themes[nextIndex];
-        document.documentElement.classList.add("theme-anim");
-        clearTimeout(window._themeT);
-        window._themeT = setTimeout(
-          () => document.documentElement.classList.remove("theme-anim"),
-          360,
-        );
-
-        document.documentElement.setAttribute("data-theme", currentTheme);
-        store.set("cipherTheme", currentTheme);
-        updateThemeIcon(currentTheme);
+        const nextTheme = themes[nextIndex];
+        animateThemeChange();
+        applyTheme(nextTheme);
+        store.set("cipherTheme", nextTheme);
       });
 
       /* =========================================================================
@@ -5395,6 +5722,296 @@ SOFTWARE.
         addEventListener("hashchange", importHash);
         importHash();
         refresh();
+      })();
+    </script>
+
+    <script>
+      /* =========================================================================
+         RELEASE HISTORY (v1.12.0)
+         One list feeds everything that shows a version:
+           - the "UPDATE Vx.y.z" box that opens from the version button,
+           - the Update Log in the "How do I use this?" guide,
+           - the button label, the guide's version chip and the footer.
+         TO PUBLISH A NEW VERSION: add one object at the TOP of RELEASES. Nothing else needs editing.
+
+         Each release:  version  "1.13.0"          (shown as v1.13.0)
+                        name     "Guided Tour"     (short release name)
+                        date     "2026-10-06"      (optional; leave it out to hide it)
+                        summary  one sentence      (what the release is about)
+                        items    [{ tag, title, text }]
+                                 tag is "new", "improved" or "fix"; wrap words in *stars* to italicize them.
+         The script builds the DOM with createElement/textContent, so none of this text is parsed as HTML.
+         ========================================================================= */
+      (() => {
+        "use strict";
+
+        const RELEASES = [
+          {
+            version: "1.13.0",
+            name: "Block Type",
+            summary:
+              "The whole interface switches to the Minecraft Default font, with credit to its creator.",
+            items: [
+              {
+                tag: "new",
+                title: "Minecraft Font",
+                text: "Every piece of text now uses Minecraft Default, in Regular, Bold, Italic and Bold Italic, loaded from the Assets folder.",
+              },
+              {
+                tag: "new",
+                title: "Font Credits",
+                text: "The footer credits tryashtar, creator of the Minecraft TTF v1.6 files, and links to the release page. The same credit sits in the page source.",
+              },
+              {
+                tag: "improved",
+                title: "Pixel-Friendly Sizing",
+                text: "The font is drawn small, so all text is scaled up to the x-height of a regular interface font. Buttons, fields and code tags follow it, and headings no longer squeeze letters together.",
+              },
+              {
+                tag: "improved",
+                title: "Early Font Loading",
+                text: "On a web server the two main font files start downloading before the stylesheet asks for them, which avoids a visible swap from the fallback font.",
+              },
+            ],
+          },
+          {
+            version: "1.12.0",
+            name: "Guided Tour",
+            summary:
+              "A built-in guide, sharper light and dark themes, and a theme that follows your system.",
+            items: [
+              {
+                tag: "new",
+                title: "How-to Guide",
+                text: "A new “How do I use this?” box sits under the app. It explains encoding and decoding step by step, with a worked example, the advanced tools, every way to export and share, and four ways to fill in the decoder.",
+              },
+              {
+                tag: "improved",
+                title: "Refined Light Theme",
+                text: "A warmer off-white with two surface levels, firmer field outlines and tuned accent colors. Every text and accent pair passes WCAG AA (4.5:1), and field outlines pass 3:1.",
+              },
+              {
+                tag: "improved",
+                title: "Refined Dark Theme",
+                text: "A true-black page for OLED screens with lifted slate cards, a lit top edge instead of shadows that vanish on black, and brighter accents that carry dark text.",
+              },
+              {
+                tag: "new",
+                title: "Automatic Theme",
+                text: "The first visit follows your system’s light or dark setting, and keeps following it until you press the toggle, which saves your choice. Dark mode no longer flashes white while the page loads, and the mobile browser bar takes the theme color.",
+              },
+              {
+                tag: "improved",
+                title: "Motion Pass",
+                text: "The Transfer button, the share-link field and the strength bar ease in, the drag handle glides to new values, history entries stagger in, and everything softens with reduced motion.",
+              },
+              {
+                tag: "improved",
+                title: "Cleaner Live Preview",
+                text: "The “// live preview” label stays hidden until Configure shifts reveals the tiles, in both the encoder and the decoder.",
+              },
+              {
+                tag: "improved",
+                title: "Release History",
+                text: "This log now keeps every version with a name, a summary and new, improved or fix tags. The version button and the guide read from the same list.",
+              },
+              {
+                tag: "fix",
+                title: "Fixes",
+                text: "Top-bar buttons choose a readable text color in both themes, and the version notes scroll when the history grows.",
+              },
+            ],
+          },
+          {
+            version: "1.11.0",
+            name: "Cipher as Instrument",
+            summary:
+              "Live letter tiles, drag-to-set shifts and share-by-link, in a two-pane layout.",
+            items: [
+              {
+                tag: "new",
+                title: "Live Letter Tiles",
+                text: "A preview shows every letter turning into its ciphered (or decoded) letter as you type.",
+              },
+              {
+                tag: "new",
+                title: "Drag-to-set Shifts",
+                text: "Drag the thin track under any shift field to change it. The number fields work as before.",
+              },
+              {
+                tag: "new",
+                title: "Share by Link",
+                text: "Copy a link that re-opens the message and lengths (optionally the shifts) in the Decoder.",
+              },
+              {
+                tag: "improved",
+                title: "Two-pane Layout",
+                text: "On wide screens the output stays visible beside the form.",
+              },
+              {
+                tag: "improved",
+                title: "History Drawer",
+                text: "A side drawer on wide screens, a popover on phones.",
+              },
+              {
+                tag: "fix",
+                title: "Fixes",
+                text: "Paste Data now applies the shifts, and hint text meets contrast guidelines.",
+              },
+            ],
+          },
+          {
+            version: "1.10.1",
+            name: "Keys & Flow",
+            summary:
+              "Keyboard navigation, smoother motion and better accessibility.",
+            items: [
+              {
+                tag: "new",
+                title: "Keyboard Navigation",
+                text: "Switch tabs with the Arrow keys, Home and End, and move through the shift fields with the Enter key.",
+              },
+              {
+                tag: "new",
+                title: "Smart Auto-focus",
+                text: "Opening a panel automatically moves focus to the first field.",
+              },
+              {
+                tag: "improved",
+                title: "Smooth Animations (WAAPI)",
+                text: "Improved transitions with physics-based spring damping curves for tabs and modals.",
+              },
+              {
+                tag: "improved",
+                title: "Dynamic Indicator",
+                text: "High-precision tab marker positioning.",
+              },
+              {
+                tag: "improved",
+                title: "Accessibility & Contrast",
+                text: "Improved support for *prefers-reduced-transparency* and *prefers-contrast*.",
+              },
+              {
+                tag: "improved",
+                title: "Form Validation",
+                text: "Error messages now clear automatically as you type.",
+              },
+            ],
+          },
+        ];
+
+        /* ---- tiny DOM helpers ---- */
+        const el = (tag, cls, text) => {
+          const node = document.createElement(tag);
+          if (cls) node.className = cls;
+          if (text != null) node.textContent = text;
+          return node;
+        };
+        /* Text with *italic* parts, built from nodes (never innerHTML). */
+        const rich = (parent, text) => {
+          text.split("*").forEach((part, i) => {
+            if (!part) return;
+            if (i % 2) parent.appendChild(el("i", "", part));
+            else parent.appendChild(document.createTextNode(part));
+          });
+        };
+        const TAGS = ["new", "improved", "fix"];
+        const tagOf = (t) => (TAGS.includes(t) ? t : "improved");
+        const countOf = (r) =>
+          r.items.length + (r.items.length === 1 ? " change" : " changes");
+        const latest = RELEASES[0];
+        const label = "v" + latest.version;
+
+        /* ---- 1. version button, footer and every "current version" chip ---- */
+        const btn = document.getElementById("updateLogBtn");
+        if (btn) {
+          btn.textContent = label;
+          btn.setAttribute("aria-label", "Version notes, " + label);
+          btn.title = "What’s new in " + label + ": " + latest.name;
+        }
+        document
+          .querySelectorAll("[data-release-version]")
+          .forEach((n) => (n.textContent = label));
+        document
+          .querySelectorAll("[data-release-footer]")
+          .forEach((n) => (n.textContent = "Odd/Even Cipher " + label));
+
+        /* ---- 2. the popover: compact, one block per release ---- */
+        const popHost = document.getElementById("updateLogList");
+        if (popHost) {
+          RELEASES.forEach((r, i) => {
+            const sec = el("section", "rel");
+            const h = el("h3", "rel-h", "UPDATE V" + r.version);
+            h.appendChild(el("span", "rel-name", r.name));
+            if (i === 0) h.appendChild(el("span", "rel-badge", "latest"));
+            if (r.date) h.appendChild(el("span", "rel-date", r.date));
+            sec.appendChild(h);
+            if (r.summary) sec.appendChild(el("p", "rel-blurb", r.summary));
+            sec.appendChild(el("hr", "rel-hr"));
+
+            const ul = el("ul", "rel-list");
+            ul.setAttribute("role", "list");
+            r.items.forEach((it) => {
+              const t = tagOf(it.tag);
+              const li = el("li");
+              li.appendChild(el("span", "rel-tag is-" + t, t));
+              li.appendChild(el("strong", "", it.title + ":"));
+              li.appendChild(document.createTextNode(" "));
+              rich(li, it.text);
+              ul.appendChild(li);
+            });
+            sec.appendChild(ul);
+            popHost.appendChild(sec);
+          });
+        }
+
+        /* ---- 3. the guide: a <details> per release, only the newest starts open ---- */
+        const tutHost = document.getElementById("tutorialReleases");
+        if (tutHost) {
+          RELEASES.forEach((r, i) => {
+            const d = el("details", "tutorial-release");
+            d.open = i === 0;
+
+            const sum = el("summary", "tutorial-release-sum");
+            sum.appendChild(el("span", "tutorial-release-ver", "v" + r.version));
+            sum.appendChild(el("span", "tutorial-release-name", r.name));
+            if (i === 0)
+              sum.appendChild(el("span", "tutorial-release-badge", "latest"));
+            if (r.date)
+              sum.appendChild(el("span", "tutorial-release-date", r.date));
+            sum.appendChild(el("span", "tutorial-release-count", countOf(r)));
+            const chev = el("span", "tutorial-release-chev");
+            chev.setAttribute("aria-hidden", "true");
+            sum.appendChild(chev);
+            d.appendChild(sum);
+
+            if (r.summary)
+              d.appendChild(el("p", "tutorial-release-blurb", r.summary));
+
+            const ul = el("ul", "tutorial-log");
+            ul.setAttribute("role", "list");
+            r.items.forEach((it, n) => {
+              const t = tagOf(it.tag);
+              const li = el(
+                "li",
+                "tutorial-log-item" + (t === "fix" ? " is-fix" : ""),
+              );
+              const meta = el("span", "tutorial-log-meta");
+              const num = el("span", "", String(n + 1).padStart(2, "0"));
+              num.setAttribute("aria-hidden", "true");
+              meta.appendChild(num);
+              meta.appendChild(el("span", "tutorial-tag is-" + t, t));
+              li.appendChild(meta);
+              li.appendChild(el("strong", "tutorial-log-title", it.title));
+              const desc = el("span", "tutorial-log-desc");
+              rich(desc, it.text);
+              li.appendChild(desc);
+              ul.appendChild(li);
+            });
+            d.appendChild(ul);
+            tutHost.appendChild(d);
+          });
+        }
       })();
     </script>
 
