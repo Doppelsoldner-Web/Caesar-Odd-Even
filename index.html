@@ -68,7 +68,11 @@ SOFTWARE.
         } catch (e) {}
         document.documentElement.setAttribute("data-theme", theme);
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", theme === "dark" ? "#000000" : "#ece9e2");
+        if (meta)
+          meta.setAttribute(
+            "content",
+            theme === "dark" ? "#000000" : "#ece9e2",
+          );
       })();
     </script>
 
@@ -286,7 +290,9 @@ SOFTWARE.
         ); /* Rounds the corners using the variable */
         position: relative; /* Lets 'absolute' elements be positioned inside this box */
         overflow: visible;
-        box-shadow: var(--shadow-card); /* Depth: a soft drop shadow in light, a lit top edge in dark */
+        box-shadow: var(
+          --shadow-card
+        ); /* Depth: a soft drop shadow in light, a lit top edge in dark */
       }
 
       /* HEADER & TOP BUTTONS */
@@ -318,7 +324,9 @@ SOFTWARE.
       }
       .icon-btn.dark-toggle {
         background: var(--ink);
-        color: var(--paper); /* always the opposite of --ink, so it reads in both themes */
+        color: var(
+          --paper
+        ); /* always the opposite of --ink, so it reads in both themes */
       }
       .icon-btn.history-toggle {
         background: var(--muted);
@@ -578,8 +586,7 @@ SOFTWARE.
         background: var(--error);
         transition:
           width 0.4s,
-          /* The bar grows in size in a smooth, animated way */ background
-            0.4s; /* The color transitions smoothly between red and green */
+          /* The bar grows in size in a smooth, animated way */ background 0.4s; /* The color transitions smoothly between red and green */
       }
 
       /* Rows generated dynamically by JavaScript to adjust the shifts */
@@ -1393,7 +1400,7 @@ SOFTWARE.
           border-color: var(--ink);
         }
       }
-    
+
       /* =========================================================================
          REDESIGN LAYER: two-pane layout, live letter tiles, drag-to-set shifts,
          share link. Purely additive: no existing rule above is removed.
@@ -1492,8 +1499,8 @@ SOFTWARE.
         touch-action: none;
         user-select: none;
         -webkit-user-select: none;
-        background: linear-gradient(90deg, var(--border) 1px, transparent 1px)
-          0 50% / 4% 45% repeat-x;
+        background: linear-gradient(90deg, var(--border) 1px, transparent 1px) 0
+          50% / 4% 45% repeat-x;
       }
       .scrub::after {
         content: "";
@@ -2802,7 +2809,7 @@ SOFTWARE.
 
       <!-- Hero Banner (Visual Introduction) -->
       <div class="hero">
-        <p class="prompt">$ cipher --odd-even<span class="cursor"></span></p>
+        <p class="prompt">$ Caesar-Odd-Even<span class="cursor"></span></p>
         <p class="tagline">
           Encode and decode phrases with Caesar cipher applied separately to odd
           and even position letters of each word.
@@ -2833,123 +2840,122 @@ SOFTWARE.
       <!-- The <section> tag divides page content into blocks for better HTML semantics -->
       <section class="panel active" id="panel-encode" role="tabpanel">
         <div class="pane pane-in">
-        <div class="field">
-          <!-- The <label> tag associates a text with an interactive element using the "for" attribute matching the "id" -->
-          <label for="encPhrase">Original phrase</label>
-          <!-- The <textarea> tag allows long (multi-line) text input from the user -->
-          <textarea
-            id="encPhrase"
-            rows="2"
-            placeholder="Ex.: Stuck in the rooms"
-          ></textarea>
-        </div>
-        <div class="options-row">
-          <!-- Interactive checkbox element that allows binary (yes/no) choices -->
-          <input type="checkbox" id="encKeepSpecial" />
-          <label for="encKeepSpecial" style="margin: 0; font-size: 13px"
-            >Preserve special characters and accents (A-Z/a-z will be ciphered,
-            the rest stays intact)</label
-          >
-        </div>
-
-        <div class="row-actions">
-          <button type="button" class="btn ghost" id="encConfigBtn">
-            Configure shifts
-          </button>
-          <button type="button" class="btn ghost" id="encClearBtn">
-            Clear
-          </button>
-        </div>
-
-        <!-- Boolean HTML attributes like 'hidden' hide the element. JS removes them to show it. -->
-        <p class="words-info" id="encWordsInfo" hidden></p>
-        <p class="legend" id="encLegend" hidden>
-          <span
-            ><span class="swatch odd"></span>odd position (1st, 3rd...)</span
-          >
-          <span
-            ><span class="swatch even"></span>even position (2nd, 4th...)</span
-          >
-        </p>
-
-        <!-- STRENGTH INDICATOR: A visual graphic built through DOM manipulation. -->
-        
-
-        <!-- This div starts empty. JavaScript fills it (innerHTML) with full rows based on the text. -->
-        <div id="encShiftsContainer" data-word-count="0"></div>
-
-        <div class="fast-fill-wrap" id="encFastFill" hidden>
-          <p class="fast-fill-title">Quick Fill / Advanced Patterns</p>
-          <div class="fast-fill-row">
-            <label class="fast-fill-field odd">
-              <span>Odd Pattern (Ex: 2 or 1,4)</span>
-              <!-- input[type="text"] is a single-line field for general typing. -->
-              <input
-                type="text"
-                id="encFastOdd"
-                placeholder="Ex: 2"
-                autocomplete="off"
-              />
-            </label>
-            <label class="fast-fill-field even">
-              <span>Even Pattern (Ex: 5 or 3,2)</span>
-              <input
-                type="text"
-                id="encFastEven"
-                placeholder="Ex: 5"
-                autocomplete="off"
-              />
-            </label>
-            <button type="button" class="btn" id="encFastApplyBtn">
-              Apply
-            </button>
-            <button
-              type="button"
-              class="btn ghost"
-              id="encRandomBtn"
-              title="Random shifts"
-              style="padding: 10px 14px"
+          <div class="field">
+            <!-- The <label> tag associates a text with an interactive element using the "for" attribute matching the "id" -->
+            <label for="encPhrase">Original phrase</label>
+            <!-- The <textarea> tag allows long (multi-line) text input from the user -->
+            <textarea
+              id="encPhrase"
+              rows="2"
+              placeholder="Ex.: Stuck in the rooms"
+            ></textarea>
+          </div>
+          <div class="options-row">
+            <!-- Interactive checkbox element that allows binary (yes/no) choices -->
+            <input type="checkbox" id="encKeepSpecial" />
+            <label for="encKeepSpecial" style="margin: 0; font-size: 13px"
+              >Preserve special characters and accents (A-Z/a-z will be
+              ciphered, the rest stays intact)</label
             >
-              🎲
+          </div>
+
+          <div class="row-actions">
+            <button type="button" class="btn ghost" id="encConfigBtn">
+              Configure shifts
             </button>
-            <button
-              type="button"
-              class="btn ghost"
-              id="encResetBtn"
-              title="Reset all shifts to 0"
-            >
-              Reset Shifts
+            <button type="button" class="btn ghost" id="encClearBtn">
+              Clear
             </button>
           </div>
-          <div class="presets-row">
-            <span class="presets-label">Presets:</span>
-            <button type="button" class="btn ghost sm" id="presetRot13">
-              ROT13
-            </button>
-            <button type="button" class="btn ghost sm" id="presetFibonacci">
-              Fibonacci
-            </button>
-            <button type="button" class="btn ghost sm" id="presetProgressive">
-              Progressive (+1,+2)
+
+          <!-- Boolean HTML attributes like 'hidden' hide the element. JS removes them to show it. -->
+          <p class="words-info" id="encWordsInfo" hidden></p>
+          <p class="legend" id="encLegend" hidden>
+            <span
+              ><span class="swatch odd"></span>odd position (1st, 3rd...)</span
+            >
+            <span
+              ><span class="swatch even"></span>even position (2nd,
+              4th...)</span
+            >
+          </p>
+
+          <!-- STRENGTH INDICATOR: A visual graphic built through DOM manipulation. -->
+
+          <!-- This div starts empty. JavaScript fills it (innerHTML) with full rows based on the text. -->
+          <div id="encShiftsContainer" data-word-count="0"></div>
+
+          <div class="fast-fill-wrap" id="encFastFill" hidden>
+            <p class="fast-fill-title">Quick Fill / Advanced Patterns</p>
+            <div class="fast-fill-row">
+              <label class="fast-fill-field odd">
+                <span>Odd Pattern (Ex: 2 or 1,4)</span>
+                <!-- input[type="text"] is a single-line field for general typing. -->
+                <input
+                  type="text"
+                  id="encFastOdd"
+                  placeholder="Ex: 2"
+                  autocomplete="off"
+                />
+              </label>
+              <label class="fast-fill-field even">
+                <span>Even Pattern (Ex: 5 or 3,2)</span>
+                <input
+                  type="text"
+                  id="encFastEven"
+                  placeholder="Ex: 5"
+                  autocomplete="off"
+                />
+              </label>
+              <button type="button" class="btn" id="encFastApplyBtn">
+                Apply
+              </button>
+              <button
+                type="button"
+                class="btn ghost"
+                id="encRandomBtn"
+                title="Random shifts"
+                style="padding: 10px 14px"
+              >
+                🎲
+              </button>
+              <button
+                type="button"
+                class="btn ghost"
+                id="encResetBtn"
+                title="Reset all shifts to 0"
+              >
+                Reset Shifts
+              </button>
+            </div>
+            <div class="presets-row">
+              <span class="presets-label">Presets:</span>
+              <button type="button" class="btn ghost sm" id="presetRot13">
+                ROT13
+              </button>
+              <button type="button" class="btn ghost sm" id="presetFibonacci">
+                Fibonacci
+              </button>
+              <button type="button" class="btn ghost sm" id="presetProgressive">
+                Progressive (+1,+2)
+              </button>
+            </div>
+          </div>
+
+          <div class="row-actions">
+            <button type="button" class="btn" id="encSubmitBtn">Encode</button>
+            <button type="button" class="btn swap" id="swapBtn" hidden>
+              Transfer to Decoder ⇄
             </button>
           </div>
-        </div>
 
-        <div class="row-actions">
-          <button type="button" class="btn" id="encSubmitBtn">Encode</button>
-          <button type="button" class="btn swap" id="swapBtn" hidden>
-            Transfer to Decoder ⇄
-          </button>
-        </div>
-
-        <div
-          id="encAlert"
-          class="alert"
-          role="status"
-          aria-live="polite"
-          hidden
-        ></div>
-
+          <div
+            id="encAlert"
+            class="alert"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></div>
         </div>
 
         <div class="pane pane-out">
@@ -2962,121 +2968,124 @@ SOFTWARE.
           </div>
 
           <div class="strength-container" id="encStrengthContainer" hidden>
-          <div class="strength-label">
-            <span>Cipher Strength</span>
-            <!-- The <span> tag groups part of a text without breaking the line. -->
-            <span id="encStrengthText">Weak</span>
+            <div class="strength-label">
+              <span>Cipher Strength</span>
+              <!-- The <span> tag groups part of a text without breaking the line. -->
+              <span id="encStrengthText">Weak</span>
+            </div>
+            <div class="strength-bar-wrap">
+              <div id="encStrengthBar" class="strength-fill"></div>
+            </div>
           </div>
-          <div class="strength-bar-wrap">
-            <div id="encStrengthBar" class="strength-fill"></div>
-          </div>
-        </div>
 
           <div class="console-wrap" id="encResultWrap" hidden>
-          <p class="console-label">// encoded result</p>
-          <div class="console">
-            <span class="console-text" id="encResult"></span>
-            <button type="button" class="copy-btn" id="encCopyBtn">copy</button>
-          </div>
-          <p class="console-label" style="margin-top: 18px">// word lengths</p>
-          <div class="console">
-            <span class="console-text" id="encSizes"></span>
-            <button type="button" class="copy-btn" id="encSizesCopyBtn">
-              copy
-            </button>
-          </div>
-          <p class="console-label" style="margin-top: 18px">
-            // shifts used (odd, even)
-          </p>
-          <div class="console">
-            <span class="console-text" id="encShiftsResult"></span>
-            <button type="button" class="copy-btn" id="encShiftsCopyBtn">
-              copy
-            </button>
-          </div>
+            <p class="console-label">// encoded result</p>
+            <div class="console">
+              <span class="console-text" id="encResult"></span>
+              <button type="button" class="copy-btn" id="encCopyBtn">
+                copy
+              </button>
+            </div>
+            <p class="console-label" style="margin-top: 18px">
+              // word lengths
+            </p>
+            <div class="console">
+              <span class="console-text" id="encSizes"></span>
+              <button type="button" class="copy-btn" id="encSizesCopyBtn">
+                copy
+              </button>
+            </div>
+            <p class="console-label" style="margin-top: 18px">
+              // shifts used (odd, even)
+            </p>
+            <div class="console">
+              <span class="console-text" id="encShiftsResult"></span>
+              <button type="button" class="copy-btn" id="encShiftsCopyBtn">
+                copy
+              </button>
+            </div>
 
-          <div style="margin-top: 20px">
-            <button
-              type="button"
-              class="btn"
-              id="encCopyAllBtn"
-              style="width: 100%; border-radius: 8px"
-            >
-              Copy All Data
-            </button>
-          </div>
+            <div style="margin-top: 20px">
+              <button
+                type="button"
+                class="btn"
+                id="encCopyAllBtn"
+                style="width: 100%; border-radius: 8px"
+              >
+                Copy All Data
+              </button>
+            </div>
 
-          <div class="link-row">
-            <button type="button" class="btn ghost" id="encLinkBtn">
-              Copy link 🔗
-            </button>
-            <label class="link-opt"
-              ><input type="checkbox" id="encLinkShifts" checked /> include
-              shifts in link</label
-            >
+            <div class="link-row">
+              <button type="button" class="btn ghost" id="encLinkBtn">
+                Copy link 🔗
+              </button>
+              <label class="link-opt"
+                ><input type="checkbox" id="encLinkShifts" checked /> include
+                shifts in link</label
+              >
+            </div>
+            <input
+              type="text"
+              class="link-field"
+              id="encLinkField"
+              readonly
+              hidden
+              aria-label="Shareable link"
+            />
           </div>
-          <input
-            type="text"
-            class="link-field"
-            id="encLinkField"
-            readonly
-            hidden
-            aria-label="Shareable link"
-          />
         </div>
-      </div>
       </section>
 
       <!-- ===================== PANEL: DECODER ===================== -->
       <section class="panel" id="panel-decode" role="tabpanel">
         <div class="pane pane-in">
-        <div class="row-actions" style="margin-bottom: 18px; margin-top: 0">
-          <button type="button" class="btn paste-btn" id="decPasteAllBtn">
-            Paste Data 📋
-          </button>
-        </div>
+          <div class="row-actions" style="margin-bottom: 18px; margin-top: 0">
+            <button type="button" class="btn paste-btn" id="decPasteAllBtn">
+              Paste Data 📋
+            </button>
+          </div>
 
-        <div class="field">
-          <label for="decMessage">Encoded message</label>
-          <textarea
-            id="decMessage"
-            rows="2"
-            placeholder="Ex.: Fscxsvyvhnubtxy"
-          ></textarea>
-        </div>
+          <div class="field">
+            <label for="decMessage">Encoded message</label>
+            <textarea
+              id="decMessage"
+              rows="2"
+              placeholder="Ex.: Fscxsvyvhnubtxy"
+            ></textarea>
+          </div>
 
-        <div class="field">
-          <label for="decSizes"
-            >Original word lengths (separated by commas)</label
-          >
-          <input type="text" id="decSizes" placeholder="Ex.: 5, 2, 3, 5" />
-        </div>
+          <div class="field">
+            <label for="decSizes"
+              >Original word lengths (separated by commas)</label
+            >
+            <input type="text" id="decSizes" placeholder="Ex.: 5, 2, 3, 5" />
+          </div>
 
-        <div class="row-actions">
-          <button type="button" class="btn ghost" id="decConfigBtn">
-            Configure shifts
-          </button>
-          <button type="button" class="btn ghost" id="decClearBtn">
-            Clear
-          </button>
-        </div>
+          <div class="row-actions">
+            <button type="button" class="btn ghost" id="decConfigBtn">
+              Configure shifts
+            </button>
+            <button type="button" class="btn ghost" id="decClearBtn">
+              Clear
+            </button>
+          </div>
 
-        <p class="words-info" id="decWordsInfo" hidden></p>
+          <p class="words-info" id="decWordsInfo" hidden></p>
 
-        <div id="decShiftsContainer" data-word-count="0"></div>
+          <div id="decShiftsContainer" data-word-count="0"></div>
 
-        <div class="row-actions">
-          <button type="button" class="btn" id="decSubmitBtn">Decode</button>
-        </div>
+          <div class="row-actions">
+            <button type="button" class="btn" id="decSubmitBtn">Decode</button>
+          </div>
 
-        <div
-          id="decAlert"
-          class="alert"
-          role="status"
-          aria-live="polite"
-          hidden
-        ></div>
-
+          <div
+            id="decAlert"
+            class="alert"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></div>
         </div>
 
         <div class="pane pane-out">
@@ -3089,13 +3098,15 @@ SOFTWARE.
           </div>
 
           <div class="console-wrap" id="decResultWrap" hidden>
-          <p class="console-label">// original phrase</p>
-          <div class="console">
-            <span class="console-text" id="decResult"></span>
-            <button type="button" class="copy-btn" id="decCopyBtn">copy</button>
+            <p class="console-label">// original phrase</p>
+            <div class="console">
+              <span class="console-text" id="decResult"></span>
+              <button type="button" class="copy-btn" id="decCopyBtn">
+                copy
+              </button>
+            </div>
           </div>
         </div>
-      </div>
       </section>
     </div>
 
@@ -3178,7 +3189,8 @@ SOFTWARE.
                       >Click
                       <kbd class="tutorial-ui">Configure shifts</kbd>.</strong
                     >
-                    Every word gets its own row with two boxes: one shift for its
+                    Every word gets its own row with two boxes: one shift for
+                    its
                     <span class="tutorial-odd"
                       ><span class="swatch odd" aria-hidden="true"></span
                       >odd</span
@@ -3191,11 +3203,11 @@ SOFTWARE.
                     letters (2nd, 4th, 6th…).
                   </li>
                   <li>
-                    <strong>Set the shifts.</strong> A shift is how many places a
-                    letter moves forward in the alphabet, from 0 to 25, wrapping
-                    around after Z. Type a number, or drag the thin track under
-                    any box. In the <em>live preview</em>, each original letter
-                    sits above the letter it becomes.
+                    <strong>Set the shifts.</strong> A shift is how many places
+                    a letter moves forward in the alphabet, from 0 to 25,
+                    wrapping around after Z. Type a number, or drag the thin
+                    track under any box. In the <em>live preview</em>, each
+                    original letter sits above the letter it becomes.
                   </li>
                   <li>
                     <strong
@@ -3216,7 +3228,9 @@ SOFTWARE.
               </div>
 
               <figure class="tutorial-example">
-                <figcaption class="tutorial-eyebrow">// worked example</figcaption>
+                <figcaption class="tutorial-eyebrow">
+                  // worked example
+                </figcaption>
                 <p class="tutorial-ex-label">Original phrase</p>
                 <p class="tutorial-ex-phrase">Stuck in the rooms</p>
                 <div class="tutorial-tiles">
@@ -3294,8 +3308,9 @@ SOFTWARE.
             <h3 class="tutorial-h" id="tut-enc-adv">Advanced functions</h3>
             <p class="tutorial-p">
               Click <kbd class="tutorial-ui">Configure shifts</kbd> and a
-              <strong>Quick Fill / Advanced Patterns</strong> panel appears under
-              the word rows, so you never have to type every shift by hand.
+              <strong>Quick Fill / Advanced Patterns</strong> panel appears
+              under the word rows, so you never have to type every shift by
+              hand.
             </p>
             <dl class="tutorial-defs">
               <div>
@@ -3367,9 +3382,9 @@ SOFTWARE.
                 <h4 class="tutorial-card-title">One piece at a time</h4>
                 <p>
                   Every box has a small
-                  <kbd class="tutorial-ui is-console">copy</kbd> button. It reads
-                  <samp>copied!</samp> for a moment when it worked. Handy when
-                  you only need one piece.
+                  <kbd class="tutorial-ui is-console">copy</kbd> button. It
+                  reads <samp>copied!</samp> for a moment when it worked. Handy
+                  when you only need one piece.
                 </p>
               </li>
               <li class="tutorial-card">
@@ -3387,18 +3402,17 @@ SOFTWARE.
                 <p>
                   <kbd class="tutorial-ui">Copy link 🔗</kbd> copies an address
                   that re-opens the message and the word lengths in the Decoder,
-                  and the shifts too while
-                  <em>include shifts in link</em> is ticked. Untick it to send
-                  the shifts some other way. The link also appears in a field
-                  under the button.
+                  and the shifts too while <em>include shifts in link</em> is
+                  ticked. Untick it to send the shifts some other way. The link
+                  also appears in a field under the button.
                 </p>
               </li>
             </ul>
             <p class="tutorial-tip">
               <strong>Want to test the round trip?</strong>
               <kbd class="tutorial-ui is-green">Transfer to Decoder ⇄</kbd>
-              sends the message and the lengths to the decode.js tab. You add the
-              shifts there.
+              sends the message and the lengths to the decode.js tab. You add
+              the shifts there.
             </p>
           </section>
 
@@ -3440,8 +3454,8 @@ SOFTWARE.
                 </p>
                 <ol class="tutorial-steps" role="list">
                   <li>
-                    <strong>Fill in the message and the lengths.</strong> Use any
-                    of the four methods below. A shared link or
+                    <strong>Fill in the message and the lengths.</strong> Use
+                    any of the four methods below. A shared link or
                     <kbd class="tutorial-ui is-green">Paste Data 📋</kbd> also
                     builds the shift rows and, when the shifts are included,
                     fills them in for you.
@@ -3473,13 +3487,15 @@ SOFTWARE.
                   <strong>If something looks off.</strong> The message must have
                   exactly as many characters as the word lengths add up to.
                   Gibberish means a shift or a length differs from the one used
-                  to encode. If you edit the lengths after configuring, the shift
-                  rows fade: click Configure shifts again.
+                  to encode. If you edit the lengths after configuring, the
+                  shift rows fade: click Configure shifts again.
                 </p>
               </div>
 
               <figure class="tutorial-example">
-                <figcaption class="tutorial-eyebrow">// worked example</figcaption>
+                <figcaption class="tutorial-eyebrow">
+                  // worked example
+                </figcaption>
                 <dl class="tutorial-console">
                   <div>
                     <dt>// encoded message</dt>
@@ -3528,12 +3544,12 @@ SOFTWARE.
                 <h4 class="tutorial-card-title">Use Paste Data 📋</h4>
                 <p>
                   In the encoder, click
-                  <kbd class="tutorial-ui is-solid">Copy All Data</kbd>. Then, in
-                  the decoder, click
-                  <kbd class="tutorial-ui is-green">Paste Data 📋</kbd>: it fills
-                  in the message and the lengths, builds the rows and applies the
-                  shifts in one go. Your browser may ask permission to read the
-                  clipboard.
+                  <kbd class="tutorial-ui is-solid">Copy All Data</kbd>. Then,
+                  in the decoder, click
+                  <kbd class="tutorial-ui is-green">Paste Data 📋</kbd>: it
+                  fills in the message and the lengths, builds the rows and
+                  applies the shifts in one go. Your browser may ask permission
+                  to read the clipboard.
                 </p>
               </li>
               <li class="tutorial-card">
@@ -3569,7 +3585,9 @@ SOFTWARE.
     <!-- === FOOTER === -->
     <!-- The <footer> tag is semantically used for footers. It does not change the look, but improves SEO and structure. -->
     <footer class="app-footer">
-      <span class="footer-left" data-release-footer>Odd/Even Cipher v1.13.0</span>
+      <span class="footer-left" data-release-footer
+        >Odd/Even Cipher v1.13.0</span
+      >
       <span class="footer-center">"Aqui é o Brasil"<br />—Dominic Toretto</span>
       <span class="footer-right">Doppelsoldner-Web</span>
       <!-- Font credit (v1.13.0): the creator's name and the release page the files came from. -->
@@ -3669,10 +3687,14 @@ SOFTWARE.
 
       function savedTheme() {
         const v = store.get("cipherTheme");
-        return themes.includes(v) ? v : null; /* rejects empty or unexpected values */
+        return themes.includes(v)
+          ? v
+          : null; /* rejects empty or unexpected values */
       }
       function preferredTheme() {
-        return savedTheme() || (systemDark && systemDark.matches ? "dark" : "light");
+        return (
+          savedTheme() || (systemDark && systemDark.matches ? "dark" : "light")
+        );
       }
       let currentTheme = preferredTheme();
 
@@ -4029,9 +4051,9 @@ SOFTWARE.
         return Promise.resolve()
           .then(() => navigator.clipboard.writeText(text))
           .then(
-          () => (done(true), true),
-          () => (done(false), false),
-        );
+            () => (done(true), true),
+            () => (done(false), false),
+          );
       }
 
       /*
@@ -5239,7 +5261,7 @@ SOFTWARE.
         };
       })(); // End of the Self-Executing Function (IIFE)
     </script>
-  
+
     <script>
       /* =========================================================================
          PREVIEW LAYER: live letter tiles, drag-to-set shifts, share-by-link.
@@ -5310,7 +5332,10 @@ SOFTWARE.
             even = $$(".enc-even");
           if (!words.length || !odd.length)
             return { hint: "Configure shifts to watch every letter move." };
-          if (odd.length !== words.length || encConfigSig !== sigOf(words, keep))
+          if (
+            odd.length !== words.length ||
+            encConfigSig !== sigOf(words, keep)
+          )
             return {
               hint: "Phrase changed. Click Configure shifts to refresh the preview.",
             };
@@ -5404,8 +5429,11 @@ SOFTWARE.
           box.hidden = false;
           hint.hidden = true;
           const sig =
-            m.rows.map((r) => r.map((t) => t.kind[0] + t.src).join("")).join("|") +
-            "#" + m.more;
+            m.rows
+              .map((r) => r.map((t) => t.kind[0] + t.src).join(""))
+              .join("|") +
+            "#" +
+            m.more;
           if (box.dataset.sig === sig) {
             const bs = box.querySelectorAll("b"),
               changed = [];
@@ -5465,7 +5493,8 @@ SOFTWARE.
             Math.round(tabsEl.getBoundingClientRect().height) + "px",
           );
         syncTabsH();
-        if (window.ResizeObserver) new ResizeObserver(syncTabsH).observe(tabsEl);
+        if (window.ResizeObserver)
+          new ResizeObserver(syncTabsH).observe(tabsEl);
         else addEventListener("resize", syncTabsH);
 
         let pending = false;
@@ -5549,8 +5578,13 @@ SOFTWARE.
           };
           const end = () => {
             s.classList.remove("dragging");
-            ["pointermove", "pointerup", "pointercancel", "lostpointercapture"].forEach(
-              (t) => s.removeEventListener(t, t === "pointermove" ? move : end),
+            [
+              "pointermove",
+              "pointerup",
+              "pointercancel",
+              "lostpointercapture",
+            ].forEach((t) =>
+              s.removeEventListener(t, t === "pointermove" ? move : end),
             );
           };
           s.addEventListener("pointermove", move);
@@ -5561,7 +5595,9 @@ SOFTWARE.
         ["encShiftsContainer", "decShiftsContainer"].forEach((id) => {
           const c = $(id);
           decorate(c);
-          new MutationObserver(() => decorate(c)).observe(c, { childList: true });
+          new MutationObserver(() => decorate(c)).observe(c, {
+            childList: true,
+          });
           c.addEventListener("pointerdown", (e) => {
             const s = e.target.closest(".scrub");
             if (s) startScrub(e, s);
@@ -5669,11 +5705,17 @@ SOFTWARE.
             const t = p.get("s").split("-");
             const ok =
               t.length === sizes.length &&
-              t.every((x) => /^\d{1,2}\.\d{1,2}$/.test(x) && x.split(".").every((n) => +n <= 25));
+              t.every(
+                (x) =>
+                  /^\d{1,2}\.\d{1,2}$/.test(x) &&
+                  x.split(".").every((n) => +n <= 25),
+              );
             pairs = ok ? t.map((x) => x.split(".").map(Number)) : false;
           }
           $("decMessage").value = msg;
-          $("decSizes").value = sizes ? sizes.join(", ") : (p.get("l") || "").slice(0, 200);
+          $("decSizes").value = sizes
+            ? sizes.join(", ")
+            : (p.get("l") || "").slice(0, 200);
           $("tab-decode").click();
           const alertEl = $("decAlert");
           if (!sizes) {
@@ -5694,18 +5736,32 @@ SOFTWARE.
               applyDecoderShiftsLater(pairs);
               showAlert(alertEl, "success", "Link loaded. Press Decode.");
             } else if (pairs === false) {
-              showAlert(alertEl, "error", "The link's shifts are invalid, so they were ignored. Fill them in manually.");
+              showAlert(
+                alertEl,
+                "error",
+                "The link's shifts are invalid, so they were ignored. Fill them in manually.",
+              );
             } else {
-              showAlert(alertEl, "success", "Link loaded. Fill in the shifts to decode.");
+              showAlert(
+                alertEl,
+                "success",
+                "Link loaded. Fill in the shifts to decode.",
+              );
             }
           }
           if (badX)
-            showAlert(alertEl, "error", "The link's message data is invalid.", $("decMessage"));
+            showAlert(
+              alertEl,
+              "error",
+              "The link's message data is invalid.",
+              $("decMessage"),
+            );
           history.replaceState(null, "", baseUrl());
           refresh();
         }
         $("historyCloseBtn").addEventListener("click", () => {
-          if ($("historyBox").classList.contains("show")) $("historyBtn").click();
+          if ($("historyBox").classList.contains("show"))
+            $("historyBtn").click();
           $("historyBtn").focus();
         });
         const bp = matchMedia("(min-width: 1000px)");
@@ -5973,7 +6029,9 @@ SOFTWARE.
             d.open = i === 0;
 
             const sum = el("summary", "tutorial-release-sum");
-            sum.appendChild(el("span", "tutorial-release-ver", "v" + r.version));
+            sum.appendChild(
+              el("span", "tutorial-release-ver", "v" + r.version),
+            );
             sum.appendChild(el("span", "tutorial-release-name", r.name));
             if (i === 0)
               sum.appendChild(el("span", "tutorial-release-badge", "latest"));
