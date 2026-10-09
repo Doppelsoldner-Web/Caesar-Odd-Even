@@ -1,0 +1,2606 @@
+/* =========================================================================
+   FONT: Minecraft Default (v1.13.0)
+   Four faces from the "Minecraft TTF" project by tryashtar, v1.6:
+   https://github.com/tryashtar/minecraft-ttf/releases#release-v1.6
+   The files live in the Assets/ folder at the site root (one level above this css/ folder, hence ../Assets/) (the folder name is
+   case-sensitive on GitHub Pages). The glyphs are the game's own text font.
+   Weights: 400 and 500 use Regular, 600 and 700 use Bold, so the existing
+   font-weight rules keep working without the browser faking a bold.
+   ========================================================================= */
+@font-face {
+  font-family: "MinecraftDefault";
+  src: url("../Assets/MinecraftDefault-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "MinecraftDefault";
+  src: url("../Assets/MinecraftDefault-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "MinecraftDefault";
+  src: url("../Assets/MinecraftDefault-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "MinecraftDefault";
+  src: url("../Assets/MinecraftDefault-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* 
+  The :root pseudo-class selects the root of the document (the <html> element).
+  Here we define "CSS Variables" (Custom Properties), which start with --.
+  This lets us reuse colors throughout the file and makes switching themes easier.
+*/
+:root {
+  /* OFF WHITE THEME (v1.12.0 refinement)
+     Two surface levels: canvas (page, input wells, tab strip) sits under paper (cards).
+     Every text and accent pair below clears WCAG AA (4.5:1); field outlines clear 3:1. */
+  --canvas: #ece9e2;
+  --paper: #fdfcfa;
+  --ink: #1f1c19;
+  --muted: #5b564f;
+  --border: #d9d5cb; /* hairlines and dividers */
+  --border-strong: #8a857a; /* outlines of fields and ghost buttons */
+  --odd: #ae1f4b;
+  --odd-soft: #f9e5ed;
+  --on-odd: #ffffff; /* text on a solid --odd surface */
+  --even: #0a5f58;
+  --even-soft: #dcefea;
+  --on-even: #ffffff; /* text on a solid --even surface */
+  --error: #b3261e;
+  --error-soft: #fbe8e5;
+  --warn: #f59e0b;
+  --success: #10b981;
+  --console-bg: #25221e;
+  --console-text: #fbfaf8;
+  --console-border: #403b35;
+  --shadow-card:
+    0 1px 2px rgba(20, 24, 32, 0.05),
+    0 12px 32px -16px rgba(20, 24, 32, 0.14);
+  --shadow-pop: 0 12px 32px -8px rgba(20, 24, 32, 0.2);
+  --shadow-drawer: -18px 0 40px -16px rgba(20, 24, 32, 0.28);
+  --radius: 10px;
+  /* Minecraft Default leads both stacks; the old fonts only fill glyphs it does not have. */
+  --mono:
+    "MinecraftDefault", "JetBrains Mono", "Fira Code", ui-monospace,
+    SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans:
+    "MinecraftDefault", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  /* Minecraft's x-height is only 0.42 em (a typical UI font has about 0.52), so at the same
+     font-size it reads about a fifth smaller. font-size-adjust scales it back up to this
+     x-height ratio everywhere at once; lower the number to shrink all text, raise it to grow. */
+  --font-adjust: 0.52;
+}
+
+/* 
+  DARK THEME 
+  This selector overrides the variables above only when <html> has the data-theme="dark" attribute.
+  This is what allows the instant switch between the light and dark modes.
+*/
+[data-theme="dark"] {
+  /* AMOLED THEME (v1.12.0 refinement)
+     The page stays pure black for OLED screens and for recessed wells (inputs, tab strip),
+     while cards are lifted to a dark slate so they read as a real surface with a visible edge. */
+  --canvas: #000000;
+  --paper: #0c1018;
+  --ink: #e6ebf2;
+  --muted: #94a3b8;
+  --border: #212a39;
+  --border-strong: #586780;
+  --odd: #ff7ba8;
+  --odd-soft: #3d1728;
+  --on-odd: #220a14; /* dark text on the bright pink: white would only reach 2.7:1 */
+  --even: #3ed3b4;
+  --even-soft: #0b3a33;
+  --on-even: #04211c;
+  --error: #ff8179;
+  --error-soft: #3b1719;
+  --console-bg: #05080d;
+  --console-text: #f4f6fa;
+  --console-border: #273246;
+  /* On black a drop shadow is invisible, so cards get a lit top edge instead. */
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-pop:
+    0 16px 40px -12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-drawer: -18px 0 40px -16px rgba(0, 0, 0, 0.8);
+}
+
+/* 
+  The asterisk (*) is the universal selector.
+  'box-sizing: border-box' makes sure borders and padding do not
+  increase the total declared width of the elements.
+*/
+* {
+  box-sizing: border-box;
+}
+
+/* Whole interface in the new font (v1.13.0).
+   Form controls and code-like tags ignore the page font unless told otherwise, and the UA
+   `font` shorthand also resets font-size-adjust, so both are handed down explicitly.
+   font-synthesis: none stops the browser from faking a second bold on top of the real one. */
+html {
+  font-family: var(--sans);
+  font-size-adjust: var(--font-adjust);
+  font-synthesis: none;
+}
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size-adjust: inherit;
+}
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--mono);
+  font-size-adjust: inherit;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased; /* Smooths the font on macOS/iOS */
+  /* The transition creates a smooth color change when switching themes, lasting 0.3 seconds. */
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+/* Class of the app's main container */
+.app {
+  max-width: 800px;
+  margin: 40px auto; /* Centers the box in the middle of the screen */
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(
+    --radius
+  ); /* Rounds the corners using the variable */
+  position: relative; /* Lets 'absolute' elements be positioned inside this box */
+  overflow: visible;
+  box-shadow: var(--shadow-card); /* Depth: a soft drop shadow in light, a lit top edge in dark */
+}
+
+/* HEADER & TOP BUTTONS */
+.top-controls {
+  position: absolute; /* Anchored to the parent .app element */
+  top: 20px;
+  right: 20px;
+  z-index: 100; /* Makes sure it stays above other elements on the screen */
+  display: flex; /* Uses Flexbox to place the buttons side by side */
+  gap: 8px; /* Space between the buttons */
+}
+
+.icon-btn,
+.update-btn {
+  background: var(--odd);
+  color: var(--on-odd);
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer; /* Changes the mouse arrow into a "pointing hand" */
+  transition: opacity 0.2s; /* On hover, the change in transparency will be smooth */
+  height: 26px;
+  display: flex;
+  align-items: center; /* Centers the text vertically */
+  justify-content: center; /* Centers it horizontally */
+}
+.icon-btn.dark-toggle {
+  background: var(--ink);
+  color: var(--paper); /* always the opposite of --ink, so it reads in both themes */
+}
+.icon-btn.history-toggle {
+  background: var(--muted);
+  color: var(--paper);
+}
+
+/* The :hover pseudo-class is activated when the user moves the mouse over the element */
+.icon-btn:hover,
+.update-btn:hover {
+  opacity: 0.85; /* Makes it slightly transparent (hover effect) */
+}
+
+/* Floating history and update boxes (pop-up menus) */
+.floating-box {
+  position: absolute; /* Floats relative to the parent button */
+  top: 36px;
+  right: 0;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  width: 320px;
+  box-shadow: var(--shadow-pop);
+
+  /* Start of the animation */
+  visibility: hidden;
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: top right; /* Origin anchored near the button at the top */
+  /* The delay on visibility makes sure the element only disappears after the 150ms opacity transition */
+  transition:
+    opacity 150ms var(--anim-ease),
+    transform 150ms var(--anim-ease),
+    visibility 0s linear 150ms;
+}
+/* When JavaScript adds the .show class, the menu appears */
+.floating-box.show {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+  /* When opening, visibility changes instantly so the animation can be seen */
+  transition:
+    opacity 150ms var(--anim-ease),
+    transform 150ms var(--anim-ease),
+    visibility 0s linear 0s;
+}
+
+.hero {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.prompt {
+  font-family: var(--mono); /* Monospaced font to simulate code */
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.cursor {
+  display: inline-block;
+  width: 9px;
+  height: 1em;
+  background: var(--ink);
+  margin-left: 3px;
+  vertical-align: -2px;
+  /* Here we connect the 'blink' animation to the element. It lasts 1s and repeats forever */
+  animation: blink 1s steps(1) infinite;
+}
+
+/*
+  KEYFRAME EXPLANATION: blink
+  1. What the animation does: 'blink'
+  2. Target element: The span with the .cursor class in the title
+  3. Visual effect: Creates the illusion of a blinking computer terminal cursor.
+  4. What it represents:
+     - At 50% of the time (half a second), the opacity becomes 0 (invisible).
+  5. What changes: The element becomes transparent and then opaque again.
+  6. How it works: Since we use "steps(1)" in the animation, there is no smooth transition. It "blinks" instantly from visible to invisible.
+  7. Impact: The animation lasts 1 second and repeats 'infinite' (forever).
+*/
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14.5px;
+  max-width: 62ch; /* Limits the text width to 62 characters (ch), which is good for reading */
+}
+
+.tabs {
+  display: flex; /* Places the tab buttons side by side */
+  border-bottom: 1px solid var(--border);
+  background: var(--canvas);
+}
+.tab-btn {
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 14px 22px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; /* Makes the border overlap the line of the .tabs container */
+}
+.tab-btn:hover {
+  color: var(--ink);
+}
+/* Visual styles when the tab is active */
+.tab-btn.active {
+  color: var(--ink);
+  background: var(--paper);
+  border-bottom-color: var(--ink);
+}
+
+.panel {
+  display: none; /* Hides all tab panels by default */
+  padding: 28px 32px 32px;
+}
+.panel.active {
+  display: block; /* JS will add .active to reveal the right tab */
+}
+
+.field {
+  margin-bottom: 18px;
+}
+.field label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* Global styles for text inputs and typing areas */
+textarea,
+input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  resize: vertical; /* Lets the user change the height of the box, but not its width */
+}
+
+.options-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.options-row input[type="checkbox"] {
+  margin: 0;
+}
+
+.row-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* If the screen is small, lets the buttons wrap onto the next line */
+  margin: 14px 0 6px;
+}
+
+/* The main CSS for interface buttons */
+.btn {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+.btn:hover {
+  opacity: 0.88;
+}
+/* ".ghost" creates a button that has no background color, only borders (outline) */
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--border-strong);
+  font-weight: 500;
+}
+.btn.swap {
+  background: var(--even);
+  border-color: var(--even);
+  color: var(--on-even);
+  margin-left: auto; /* Pushes this specific button to the far right in the flexbox */
+}
+.btn.paste-btn {
+  background: var(--even);
+  border-color: var(--even);
+  color: var(--on-even);
+}
+.btn.sm {
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+.words-info {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 2px 0 14px;
+}
+.legend {
+  display: flex;
+  gap: 18px;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+/* Hint marker colors based on the original variables */
+.swatch.odd {
+  background: var(--odd);
+}
+.swatch.even {
+  background: var(--even);
+}
+
+/* Elements of the "Password/Cipher Strength Indicator" */
+.strength-container {
+  margin: 15px 0;
+}
+.strength-label {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+.strength-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden; /* Hides any color that goes outside the rounded limits */
+}
+.strength-fill {
+  height: 100%;
+  width: 0%; /* Starts at 0% and JS updates this value according to the complexity */
+  background: var(--error);
+  transition:
+    width 0.4s,
+    /* The bar grows in size in a smooth, animated way */ background
+      0.4s; /* The color transitions smoothly between red and green */
+}
+
+/* Rows generated dynamically by JavaScript to adjust the shifts */
+.shift-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--border);
+  flex-wrap: wrap;
+}
+.row-num {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--muted);
+  width: 18px;
+  flex-shrink: 0; /* Prevents this number from being squeezed by Flexbox */
+}
+.row-word {
+  flex: 1 1 160px; /* Flexbox: grows, shrinks and uses 160px as the base width */
+  min-width: 110px;
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  word-break: break-all; /* Breaks very long words if they do not fit on the screen */
+}
+.letter.odd {
+  color: var(--odd);
+}
+.letter.even {
+  color: var(--even);
+}
+.letter.placeholder {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.row-inputs {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.shift-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.shift-field input {
+  width: 72px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  font-family: var(--mono);
+  font-size: 14px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+/* Colored borders on the left help the user identify the Odd and Even fields */
+.shift-field.odd input {
+  border-left: 3px solid var(--odd);
+}
+.shift-field.even input {
+  border-left: 3px solid var(--even);
+}
+
+.shift-field input.invalid {
+  border-color: var(--error);
+  background: var(--error-soft);
+}
+
+.fast-fill-wrap {
+  margin: 20px 0 16px;
+  padding: 14px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.fast-fill-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.fast-fill-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.fast-fill-field {
+  flex: 1; /* Lets the field take up all the remaining space in the row */
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.fast-fill-field input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  font-family: var(--mono);
+  font-size: 14px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.presets-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.presets-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+/* Success/error alert box */
+.alert {
+  padding: 12px 14px;
+  border-left: 4px solid;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 16px 0 0;
+}
+.alert-error {
+  background: var(--error-soft);
+  border-color: var(--error);
+  color: var(--error);
+}
+.alert-success {
+  background: var(--even-soft);
+  border-color: var(--even);
+  color: var(--even);
+}
+
+/* Results area (simulated terminal) */
+.console-wrap {
+  margin-top: 20px;
+}
+.console-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.console {
+  background: var(--console-bg);
+  color: var(--console-text);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.console-text {
+  font-family: var(--mono);
+  font-size: 15px;
+  word-break: break-all;
+}
+.copy-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--console-border);
+  color: var(--console-text);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* History list */
+.history-list {
+  list-style: none; /* Removes the default bullets from <li> items */
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink);
+}
+.history-item {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.history-item:last-child {
+  border-bottom: none; /* The last item does not need a bottom border */
+}
+.history-item strong {
+  color: var(--odd);
+  font-family: var(--mono);
+}
+.history-empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 10px;
+}
+
+/* Footer */
+.footer-center {
+  text-align: center;
+  line-height: 1.4;
+}
+
+.app-footer {
+  flex-wrap: wrap; /* lets the credit line sit under the three footer items */
+  row-gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 800px;
+  margin: 0 auto 20px auto;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+/* Font credit: one centered line under the footer items. The links are underlined so they read as links
+   in a font where color alone would be a weak cue. */
+.footer-credits {
+  flex: 1 0 100%;
+  margin: 0;
+  text-align: center;
+  line-height: 1.6;
+  text-wrap: balance;
+}
+.footer-credits a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.footer-credits a:focus-visible {
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .footer-credits a:hover {
+    color: var(--odd);
+  }
+}
+
+/* =====================================================================
+   ANIMATION LAYER (additive) — motion only, no visual/layout changes
+   ===================================================================== */
+:root {
+  /* Defines a custom timing curve (bezier) to animate faster at the start and slower at the end */
+  --anim-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Tabs: the active state fades in instead of snapping (same colours) */
+.tab-btn {
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    border-bottom-color 0.18s ease;
+}
+
+/* 
+   Encoder <-> Decoder
+   These classes manage sections leaving and entering the screen
+*/
+.panel.is-entering {
+  transform-origin: top center;
+  animation: anim-panel-in 0.26s var(--anim-ease) 0.07s both;
+}
+.panel.is-leaving {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none; /* Ignores clicks while leaving the screen */
+  animation: anim-panel-out 0.12s ease-out both;
+}
+
+/*
+  KEYFRAME EXPLANATION: anim-panel-in
+  1. Name: anim-panel-in
+  2. Element: .panel.is-entering (the panel that is becoming visible).
+  3. Visual effect: Makes the new panel appear by rising slightly while its opacity increases.
+  4. Representation:
+     - from (0%): Panel 100% invisible, slightly shifted down (8px) and a tiny bit smaller (scale 0.995).
+     - to (100%): Panel fully visible and in its original position.
+  5. Changes: Opacity and the 'transform' property (which moves and resizes).
+  6. How it works: Gives a "floating" physical feel when the user clicks the tab, creating a more polished UX.
+  7. Impact: Uses `both` in animation-fill-mode so that the applied style prevails before and after the animation.
+*/
+@keyframes anim-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+  KEYFRAME EXPLANATION: anim-panel-out
+  1. Name: anim-panel-out
+  2. Element: .panel.is-leaving (the panel of the tab the user just left).
+  3. Visual effect: Makes the old panel disappear by "flying" upward and becoming transparent.
+  4. Representation:
+     - from (0%): Default visible state.
+     - to (100%): Invisible (opacity: 0) and shifted -4px (upward).
+  5. Changes: Transform and opacity.
+  6. How it works: It complements 'anim-panel-in'. While one comes down and appears, this one goes up and disappears.
+  7. Impact: Lasts only 0.12s to keep things quick for the user.
+*/
+@keyframes anim-panel-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Fix: the [hidden] selector makes sure the default HTML 'hidden' attribute works by force, using !important */
+[hidden] {
+  display: none !important;
+}
+
+/* "Configure shifts": keeps the block visible while JavaScript animates it collapsing */
+.cfg-leaving[hidden] {
+  display: block !important;
+}
+.legend.cfg-leaving[hidden] {
+  display: flex !important;
+}
+
+/* 
+   The 'Stagger' creates a "cascade" effect.
+   The inline variable "--i" is calculated via JavaScript for each new row.
+*/
+.shift-row.row-enter {
+  animation: anim-row-in 0.26s var(--anim-ease)
+    calc(min(var(--i, 0), 8) * 40ms) both;
+}
+
+/*
+  KEYFRAME EXPLANATION: anim-row-in
+  1. Name: anim-row-in
+  2. Element: .shift-row.row-enter (each new row generated by the 'Configure shifts' button).
+  3. Visual effect: Makes each row appear gradually, coming from below, with a different "delay" in sequence (cascade effect).
+  4. Representation:
+     - from: Transparent (opacity: 0) and lower than normal (translateY(6px)).
+     - to: Visible and in its normal position.
+  5. Changes: Opacity and translateY (movement on the vertical axis).
+  6. How it works: JS adds "--i" (like 1, 2, 3...) to each row. CSS multiplies it by 40ms, creating progressive delays. Row 1 enters quickly, row 2 enters after 40ms, row 3 after 80ms, etc.
+  7. Impact: The math in 'animation-delay' creates the complex effect using only CSS.
+*/
+@keyframes anim-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Instant visual validation with a green border if the user filled the field in */
+.shift-field input {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+/* If it has the custom 'data-filled' attribute (managed by JS) and is not invalid, it turns a subtle green */
+.shift-field input[data-filled]:not(.invalid) {
+  border-top-color: rgba(16, 185, 129, 0.55);
+  border-right-color: rgba(16, 185, 129, 0.55);
+  border-bottom-color: rgba(16, 185, 129, 0.55);
+  background-color: rgba(16, 185, 129, 0.1);
+  /* color-mix blends green with the native background color */
+  background-color: color-mix(in srgb, var(--success) 10%, var(--canvas));
+}
+
+/* General transition for all buttons when they are pressed or hovered over */
+.btn {
+  transition:
+    transform 0.12s var(--anim-ease),
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    opacity 0.12s ease;
+}
+/* The :active state reflects the button while it is being pressed (mouse down) */
+.btn:active {
+  transform: scale(
+    0.96
+  ); /* Shrinks the size by 4% to simulate a real press */
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--ink) 80%, #000);
+  border-color: color-mix(in srgb, var(--ink) 80%, #000);
+  color: color-mix(in srgb, var(--paper) 88%, var(--ink));
+}
+
+/* Copy feedback: the text bounces when copied */
+.console-text.copy-bounce {
+  animation: anim-copy-bounce 0.48s linear;
+}
+
+/*
+  KEYFRAME EXPLANATION: anim-copy-bounce
+  1. Name: anim-copy-bounce
+  2. Element: Copied texts in the .console-text class
+  3. Visual effect: The text makes a quick little jump upward ("bounce") to visually signal that the copy worked.
+  4. Representation (Keyframes):
+     - 0%: Starts in place with a timing function to "rise quickly".
+     - 36%: Highest point, rises -5px. The function changes to "fall quickly".
+     - 68%: Bounces briefly +1px (goes past the ground and comes back).
+     - 100%: Returns perfectly to the original place.
+  5. Changes: Vertical displacement using "transform: translateY".
+  6. How it works: By changing the 'animation-timing-function' (the cubic-bezier curves) between the points, the jump gets "realistic" physics of rising, free fall and settling.
+  7. Impact: Gives visual feedback without needing a new tab to load, improving interactivity.
+*/
+@keyframes anim-copy-bounce {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(
+      0.215,
+      0.61,
+      0.355,
+      1
+    ); /* rise */
+  }
+  36% {
+    transform: translateY(-5px);
+    animation-timing-function: cubic-bezier(
+      0.55,
+      0.085,
+      0.68,
+      0.53
+    ); /* fall */
+  }
+  68% {
+    transform: translateY(1px);
+    animation-timing-function: cubic-bezier(
+      0.25,
+      0.46,
+      0.45,
+      0.94
+    ); /* settle */
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility rule: if the user prefers reduced motion in the computer's OS settings, we cancel the animations here */
+@media (prefers-reduced-motion: reduce) {
+  .tab-btn {
+    transition: none;
+  }
+  .panel.is-entering,
+  .panel.is-leaving,
+  .shift-row.row-enter,
+  .console-text.copy-bounce {
+    animation: none;
+  }
+  .shift-field input {
+    transition: none;
+  }
+  .btn {
+    transition: none;
+  }
+  .btn:active {
+    transform: none;
+  }
+  .panel.is-leaving {
+    display: none;
+  }
+  .floating-box,
+  .floating-box.show {
+    transition: none;
+  }
+}
+
+/* =====================================================================
+   REFINEMENT LAYER — one easing token (--anim-ease) drives CSS + WAAPI
+   ===================================================================== */
+:root {
+  color-scheme: light;
+  --ring: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+/* Theme polish (v1.12.0): small details the browser would otherwise leave in its own colors. */
+::selection {
+  background: color-mix(in srgb, var(--odd) 30%, transparent);
+  color: var(--ink);
+}
+textarea::placeholder,
+input::placeholder {
+  color: color-mix(in srgb, var(--muted) 88%, var(--canvas));
+  opacity: 1; /* Firefox dims placeholders by default */
+}
+input[type="checkbox"] {
+  accent-color: var(--odd);
+}
+/* Critically damped spring (no overshoot) sampled as linear(); cubic-bezier remains the fallback */
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --anim-ease: linear(
+      0 0%,
+      0.037 5%,
+      0.122 10%,
+      0.228 15%,
+      0.337 20%,
+      0.537 30%,
+      0.692 40%,
+      0.801 50%,
+      0.874 60%,
+      0.922 70%,
+      0.952 80%,
+      0.971 90%,
+      1 100%
+    );
+  }
+}
+html {
+  scroll-padding-top: 60px;
+  -webkit-text-size-adjust: 100%;
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.theme-anim,
+.theme-anim * {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease !important;
+}
+
+.app {
+  box-shadow: var(--shadow-card);
+}
+
+/* Typography: tight tracking on display, calm leading on body, no code ligatures in cipher text */
+.prompt,
+.tab-btn,
+.console-text,
+.row-word,
+.row-num,
+.shift-field input,
+.fast-fill-field input,
+.app-footer,
+.icon-btn,
+.update-btn {
+  font-variant-ligatures: none;
+}
+.prompt {
+  letter-spacing: 0; /* pixel font: no negative tracking */
+  line-height: 1.25;
+}
+.tagline {
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.shift-field input,
+.fast-fill-field input,
+.console-text,
+.row-num {
+  font-variant-numeric: tabular-nums;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Focus + validation states */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+textarea:focus-visible,
+input:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+textarea,
+input[type="text"],
+.shift-field input,
+.fast-fill-field input {
+  transition:
+    border-color 0.15s,
+    background-color 0.2s,
+    box-shadow 0.15s;
+}
+textarea.invalid,
+input[type="text"].invalid {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 16%, transparent);
+}
+.shift-field input.invalid:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 16%, transparent);
+}
+.btn.invalid {
+  border-color: var(--error);
+  color: var(--error);
+}
+.btn.needs-config {
+  border-color: var(--ink);
+}
+.is-stale {
+  opacity: 0.45;
+  transition: opacity 0.25s var(--anim-ease);
+}
+
+/* Press feedback lands on pointer-down; hit areas padded for touch */
+.icon-btn,
+.update-btn,
+.copy-btn {
+  transition:
+    transform 0.1s ease-out,
+    opacity 0.15s,
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.icon-btn:active,
+.update-btn:active,
+.copy-btn:active {
+  transform: scale(0.94);
+}
+.icon-btn,
+.update-btn {
+  position: relative;
+}
+.icon-btn::after,
+.update-btn::after {
+  content: "";
+  position: absolute;
+  inset: -9px -4px;
+}
+.copy-btn {
+  min-width: 72px;
+  text-align: center;
+}
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.copy-btn.is-done {
+  border-color: #5fd3bf;
+  color: #5fd3bf;
+}
+.console {
+  border: 1px solid var(--console-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Tabs: a single indicator glides between tabs; bar floats over content as a light material */
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--canvas) 84%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+.tab-btn.active {
+  border-bottom-color: transparent;
+}
+.tab-btn:focus-visible {
+  outline-offset: -4px;
+}
+.tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 1px;
+  height: 2px;
+  background: var(--ink);
+  transform-origin: 0 0;
+  transition: transform 0.45s var(--anim-ease);
+  pointer-events: none;
+}
+
+/* Popovers: anchored to their trigger, materialize with blur + scale */
+.floating-box {
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, calc(100vw - 32px));
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  transform: scale(0.94);
+  transform-origin: 90% 0;
+  box-shadow: var(--shadow-pop);
+  transition:
+    opacity 0.18s var(--anim-ease),
+    transform 0.3s var(--anim-ease),
+    backdrop-filter 0.3s ease,
+    -webkit-backdrop-filter 0.3s ease,
+    visibility 0s linear 0.3s;
+}
+.floating-box.show {
+  transform: scale(1);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  transition:
+    opacity 0.18s var(--anim-ease),
+    transform 0.3s var(--anim-ease),
+    backdrop-filter 0.3s ease,
+    -webkit-backdrop-filter 0.3s ease,
+    visibility 0s;
+}
+
+@media (max-width: 600px) {
+  .app {
+    margin: 12px;
+  }
+  .hero {
+    padding: 60px 18px 16px;
+  }
+  .panel {
+    padding: 20px 16px 24px;
+  }
+  .prompt {
+    font-size: 18px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 14px 8px;
+  }
+  .btn.swap {
+    margin-left: 0;
+    flex: 1 1 100%;
+  }
+  .app-footer {
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+}
+@media (hover: none) {
+  .btn:hover,
+  .icon-btn:hover,
+  .update-btn:hover {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tab-indicator,
+  .is-stale,
+  .copy-btn,
+  .icon-btn,
+  .update-btn {
+    transition: none;
+  }
+  .icon-btn:active,
+  .update-btn:active,
+  .copy-btn:active {
+    transform: none;
+  }
+  .cursor {
+    animation: none;
+  }
+  .theme-anim,
+  .theme-anim * {
+    transition: none !important;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .tabs {
+    background: var(--canvas);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .floating-box,
+  .floating-box.show {
+    background: var(--paper);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@media (prefers-contrast: more) {
+  :root {
+    --border: color-mix(in srgb, var(--ink) 45%, transparent);
+    --border-strong: var(--ink);
+  }
+  .floating-box {
+    border-color: var(--ink);
+  }
+}
+
+/* =========================================================================
+   REDESIGN LAYER: two-pane layout, live letter tiles, drag-to-set shifts,
+   share link. Purely additive: no existing rule above is removed.
+   ========================================================================= */
+/* Hint text of the new UI is kept at 4.5:1 or better in both themes. */
+:root {
+  --muted-text: var(--muted);
+}
+.pane {
+  min-width: 0;
+}
+.preview {
+  margin: 0 0 18px;
+}
+.preview .console-label {
+  margin-bottom: 8px;
+}
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.tile-word {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.tile-num {
+  width: 18px;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted-text);
+}
+.tile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  padding: 3px 0 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: var(--mono);
+  line-height: 1.15;
+}
+/* The source letter is neutral and slightly faded; the result letter below carries the odd/even color. */
+.tile i {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--ink);
+  opacity: 0.72;
+}
+.tile b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+.tile.odd {
+  color: var(--odd);
+  background: var(--odd-soft);
+}
+.tile.even {
+  color: var(--even);
+  background: var(--even-soft);
+}
+.tile.plain {
+  color: var(--muted-text);
+  border: 1px dashed var(--border);
+}
+.tile.unset b {
+  opacity: 0.4;
+}
+.tiles-hint,
+.tiles-more {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--muted-text);
+}
+.tiles-more {
+  margin: 0;
+  font-family: var(--mono);
+}
+.scrub {
+  position: relative;
+  display: block;
+  height: 10px;
+  margin: 1px 2px 0;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: linear-gradient(90deg, var(--border) 1px, transparent 1px)
+    0 50% / 4% 45% repeat-x;
+}
+.scrub::after {
+  content: "";
+  position: absolute;
+  inset: -8px -4px;
+}
+.scrub i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--p, 0) * 100%);
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: var(--muted);
+}
+.shift-field.odd .scrub i {
+  background: var(--odd);
+}
+.shift-field.even .scrub i {
+  background: var(--even);
+}
+.scrub.unset i {
+  opacity: 0.3;
+}
+.scrub.dragging {
+  cursor: grabbing;
+}
+.scrub.dragging i {
+  transform: scale(1.4);
+}
+.link-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.link-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted-text);
+}
+.link-field {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+@media (min-width: 1000px) {
+  .app {
+    max-width: 1080px;
+  }
+  .panel.active,
+  .panel.is-leaving {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    column-gap: 36px;
+    align-items: start;
+  }
+  .pane-out {
+    position: sticky;
+    top: calc(var(--tabs-h, 46px) + 12px);
+    max-height: calc(100vh - var(--tabs-h, 46px) - 24px);
+    overflow-y: auto;
+    padding: 2px;
+  }
+}
+/* Single column: the output block keeps the same breathing room the result boxes always had. */
+@media not all and (min-width: 1000px) {
+  .pane-out {
+    margin-top: 20px;
+  }
+}
+/* While the layout switches between popover and drawer (width crosses 1000px),
+   transitions are paused so the closed box cannot sweep across the page. */
+.no-bp-anim .floating-box {
+  transition: none !important;
+}
+.drawer-close {
+  display: none;
+}
+@media (min-width: 1000px) {
+  #historyBox.floating-box {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: auto;
+    width: min(360px, 92vw);
+    max-height: none;
+    overflow-y: auto;
+    padding: 24px 22px;
+    border-width: 0 0 0 1px;
+    border-radius: 0;
+    transform: translateX(100%);
+    transform-origin: right center;
+    box-shadow: var(--shadow-drawer);
+  }
+  #historyBox.floating-box.show {
+    transform: none;
+  }
+  .drawer-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .drawer-close:hover {
+    background: var(--canvas);
+  }
+}
+@media (prefers-contrast: more) {
+  .tile {
+    border-color: currentColor;
+  }
+  .scrub {
+    outline: 1px solid var(--ink);
+  }
+}
+@media (forced-colors: active) {
+  .tile {
+    border: 1px solid CanvasText;
+  }
+  .scrub i {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+}
+
+/* =========================================================================
+   MOTION PASS 2: states that used to snap now animate.
+   Rules from SKILL.md / RECIPES.md: transform + opacity only, strong
+   ease-out, entrances from a small offset (never scale(0)), stagger capped,
+   and reduced motion = gentler (opacity only), not zero.
+   ========================================================================= */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes anim-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Page load (rare tier): the hero lines settle in once. Reuses anim-row-in. */
+.hero .prompt,
+.hero .tagline {
+  animation: anim-row-in 300ms var(--ease-out) both;
+}
+.hero .tagline {
+  animation-delay: 60ms;
+}
+
+/* History: items stagger in every time the popover / drawer opens. --i is set in renderHistory(). */
+#historyBox.show .history-item,
+#historyBox.show .history-empty {
+  animation: anim-row-in 260ms var(--ease-out)
+    calc(60ms + min(var(--i, 0), 8) * 40ms) both;
+}
+
+/* Tiles: the result letter fades between "unset" and set instead of snapping. */
+.tile b {
+  transition: opacity 150ms ease;
+}
+
+/* Strength bar: scaleX instead of width (GPU), grows in from 0 on first appearance. */
+.strength-fill {
+  width: 100%;
+  transform: scaleX(var(--fill, 0));
+  transform-origin: left center;
+  transition:
+    transform 300ms var(--ease-out),
+    background-color 300ms ease;
+}
+
+/* "Transfer to Decoder" and the share-link field appear with a short rise (opacity + translate,
+   so the press transform on the button is untouched). */
+.btn.swap {
+  transition:
+    transform 0.12s var(--anim-ease),
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    opacity 200ms var(--ease-out),
+    translate 200ms var(--ease-out);
+}
+input.link-field {
+  transition:
+    border-color 0.15s,
+    background-color 0.2s,
+    box-shadow 0.15s,
+    opacity 200ms var(--ease-out),
+    translate 200ms var(--ease-out);
+}
+
+/* Drag track: the handle slides to a new value (presets, random, typing) and eases its press scale.
+   While dragging it follows the pointer 1:1, so translate is not transitioned then. */
+@supports (width: 1cqw) {
+  .scrub {
+    container-type: inline-size;
+  }
+  .scrub i {
+    left: 0;
+    margin-left: 0;
+    translate: calc(var(--p, 0) * 100cqw - 3px) 0;
+    transition:
+      translate 220ms var(--ease-out),
+      transform 160ms var(--ease-out),
+      opacity 160ms ease;
+  }
+  .scrub.dragging i {
+    transition:
+      transform 160ms var(--ease-out),
+      opacity 160ms ease;
+  }
+}
+
+/* History drawer close button: hover + press feedback. */
+.drawer-close {
+  transition:
+    background-color 150ms ease,
+    transform 100ms var(--ease-out);
+}
+.drawer-close:active {
+  transform: scale(0.94);
+}
+
+/* Starting styles must come after the rules they start from. */
+@starting-style {
+  .btn.swap {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  input.link-field {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+  .strength-fill {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .prompt,
+  .hero .tagline {
+    animation: anim-fade-in 200ms ease both;
+  }
+  #historyBox.show .history-item,
+  #historyBox.show .history-empty {
+    animation: anim-fade-in 150ms ease both;
+  }
+  .btn.swap {
+    transition: opacity 150ms ease;
+  }
+  input.link-field {
+    transition:
+      border-color 0.15s,
+      opacity 150ms ease;
+  }
+  .strength-fill {
+    transition: background-color 200ms ease;
+  }
+  .scrub i,
+  .scrub.dragging i {
+    transition: opacity 160ms ease;
+  }
+  .drawer-close {
+    transition: background-color 150ms ease;
+  }
+  .drawer-close:active {
+    transform: none;
+  }
+}
+
+/* "// live preview" label: hidden until Configure shifts reveals the tiles (encoder and decoder),
+   then it fades in together with them. */
+.preview:has(> .tiles[hidden]) > .console-label {
+  display: none;
+}
+.preview > .console-label {
+  transition: opacity 200ms var(--ease-out);
+}
+@starting-style {
+  .preview > .console-label {
+    opacity: 0;
+  }
+}
+
+/* =========================================================================
+   TUTORIAL BOX: "How do I use this?"
+   A separate card under .app with its own tab system. Every class is
+   prefixed tutorial-, so the main script's .tabs / .tab-btn / .panel
+   selectors never see it. It only reads the shared tokens (--canvas,
+   --paper, --ink, --border, --odd, --even ...), so both themes just work.
+   Motion follows SKILL.md / RECIPES.md: transform, opacity and clip-path
+   (plus one short height tween, the accordion exception), strong custom
+   curves, everything under 300 ms, a capped stagger, hover limited to fine
+   pointers, and reduced motion = opacity only (gentler, not zero).
+   ========================================================================= */
+:root {
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.tutorial {
+  max-width: 800px;
+  margin: 0 auto 40px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+/* The tutorial hangs closer to the main card than the page edge does. */
+.app:has(+ .tutorial) {
+  margin-bottom: 24px;
+}
+
+/* ---- Header: same rhythm as the hero ---- */
+.tutorial-head {
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.tutorial-title {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0; /* pixel font: no negative tracking */
+  font-variant-ligatures: none;
+  text-wrap: balance;
+}
+.tutorial-lead {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted-text);
+  font-size: 14.5px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* ---- Tabs ----
+   Two layers. The real buttons carry the "unselected" look and all the
+   semantics. Above them sits an aria-hidden copy of the list in the
+   "selected" look (paper background, ink text, underline), clipped to the
+   selected tab. Moving the clip window changes text and background in one
+   piece, so nothing is interpolated tab by tab (RECIPES.md). */
+.tutorial-tabs {
+  position: relative;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--border);
+}
+.tutorial-tablist {
+  display: flex;
+}
+.tutorial-tab-btn,
+.tutorial-tab-face {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 14px 22px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-variant-ligatures: none;
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+}
+.tutorial-tab-btn {
+  background: transparent;
+  color: var(--muted-text);
+  cursor: pointer;
+  transition:
+    transform 160ms var(--ease-out),
+    color 150ms ease;
+}
+.tutorial-tab-btn:active {
+  transform: scale(0.97);
+}
+.tutorial-tab-btn:focus-visible {
+  outline-offset: -4px;
+}
+.tutorial-tabs-active {
+  position: absolute;
+  inset: 0 0 -1px;
+  display: flex;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  clip-path: inset(0 100% 0 0); /* the script sets the real window */
+  transition: clip-path 250ms var(--ease-in-out);
+}
+.tutorial-tab-face {
+  background: var(--paper);
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+/* The selected button is covered by its copy, so the keyboard ring is repeated on the copy. */
+.tutorial-tabs:has(#tutorial-tab-encode:focus-visible)
+  .tutorial-tab-face:nth-child(1),
+.tutorial-tabs:has(#tutorial-tab-decode:focus-visible)
+  .tutorial-tab-face:nth-child(2) {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .tutorial-tab-btn:hover {
+    color: var(--ink);
+  }
+}
+
+/* ---- Panels ---- */
+.tutorial-panels.is-resizing {
+  overflow: clip; /* only while the height tween runs */
+}
+.tutorial-panel {
+  padding: 28px 32px 32px;
+}
+.tutorial-panel[hidden] {
+  display: none;
+}
+.tutorial-panel:focus-visible {
+  outline-offset: -4px;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.tutorial-section + .tutorial-section {
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ---- Type: tight on headings, calm on body (apple-design: tracking and leading follow size) ---- */
+.tutorial-h {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0; /* pixel font: no negative tracking */
+  text-wrap: balance;
+}
+.tutorial-h::before {
+  content: "//";
+  content: "//" / "";
+  margin-right: 8px;
+  font-family: var(--mono);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--muted-text);
+}
+.tutorial-p,
+.tutorial-tip {
+  margin: 0 0 14px;
+  max-width: 68ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.tutorial-note {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--ink);
+  border-radius: 6px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.tutorial-tip {
+  margin: 16px 0 0;
+  color: var(--muted-text);
+  font-size: 13.5px;
+}
+.tutorial-odd,
+.tutorial-even {
+  font-weight: 600;
+}
+.tutorial-odd {
+  color: var(--odd);
+}
+.tutorial-even {
+  color: var(--even);
+}
+
+/* Names of buttons and fields, drawn like the real thing (kept quiet: 12.5px, no shadows). */
+.tutorial-ui {
+  display: inline;
+  padding: 1px 6px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.87em;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.tutorial-ui.is-wrap {
+  white-space: normal;
+}
+.tutorial-ui.is-solid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.tutorial-ui.is-green {
+  background: var(--even);
+  border-color: var(--even);
+  color: var(--paper);
+}
+.tutorial-ui.is-console {
+  background: var(--console-bg);
+  border-color: var(--console-border);
+  color: var(--console-text);
+  font-weight: 400;
+}
+.tutorial code,
+.tutorial samp {
+  padding: 1px 5px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.88em;
+  font-variant-ligatures: none;
+}
+
+/* ---- Numbered steps ---- */
+.tutorial-steps {
+  counter-reset: step;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.tutorial-steps > li {
+  position: relative;
+  padding-left: 40px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  counter-increment: step;
+  text-wrap: pretty;
+}
+.tutorial-steps > li::before,
+.tutorial-methods > li::before {
+  content: counter(step);
+  content: counter(step) / "";
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tutorial-steps > li::before {
+  position: absolute;
+  left: 0;
+  top: -1px;
+}
+
+/* ---- Worked example (a miniature of the live preview and the console) ---- */
+.tutorial-example {
+  margin: 0;
+  padding: 16px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.tutorial-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--muted-text);
+}
+.tutorial-ex-label {
+  margin: 0 0 2px;
+  font-size: 12.5px;
+  color: var(--muted-text);
+}
+.tutorial-ex-phrase {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-variant-ligatures: none;
+  overflow-wrap: anywhere;
+}
+.tutorial-tiles {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 6px;
+}
+.tutorial-tile-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tutorial-tile-num {
+  width: 18px;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted-text);
+}
+.tutorial-tile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  padding: 3px 0 4px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: var(--mono);
+  line-height: 1.15;
+}
+.tutorial-tile i {
+  font-size: 10px;
+  font-style: normal;
+  color: var(--ink);
+  opacity: 0.72;
+}
+.tutorial-tile b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+.tutorial-tile.odd {
+  color: var(--odd);
+  background: var(--odd-soft);
+}
+.tutorial-tile.even {
+  color: var(--even);
+  background: var(--even-soft);
+}
+.tutorial-ex-cap {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted-text);
+}
+.tutorial-console {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--console-bg);
+  color: var(--console-text);
+  border: 1px solid var(--console-border);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.tutorial-console + .tutorial-console {
+  margin-top: 10px;
+}
+.tutorial-ex-arrow {
+  margin: 8px 0;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted-text);
+}
+.tutorial-console dt {
+  margin: 0 0 2px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--console-text) 62%, transparent);
+}
+.tutorial-console dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Definition rows (advanced functions) ---- */
+.tutorial-defs {
+  margin: 0;
+}
+.tutorial-defs > div {
+  display: grid;
+  grid-template-columns: minmax(160px, 230px) minmax(0, 1fr);
+  gap: 8px 28px;
+  padding: 14px 0;
+  border-top: 1px dashed var(--border);
+}
+.tutorial-defs > div:last-child {
+  padding-bottom: 0;
+}
+.tutorial-defs dt {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.tutorial-defs dd {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.tutorial-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 4px 0 2px;
+  border-radius: 50%;
+  vertical-align: 0;
+}
+.tutorial-dot.is-weak {
+  background: var(--error);
+}
+.tutorial-dot.is-medium {
+  background: var(--warn);
+}
+.tutorial-dot.is-strong {
+  background: var(--success);
+}
+
+/* ---- Cards: export ways, decoder methods, changelog ---- */
+.tutorial-cards,
+.tutorial-methods,
+.tutorial-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.tutorial-methods {
+  counter-reset: step;
+}
+.tutorial-card,
+.tutorial-log-item {
+  padding: 16px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.tutorial-card-title {
+  margin: 0 0 6px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0; /* pixel font: no negative tracking */
+}
+.tutorial-card p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted-text);
+  text-wrap: pretty;
+}
+.tutorial-methods > li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  column-gap: 12px;
+  align-content: start;
+}
+.tutorial-methods > li::before {
+  grid-row: 1 / span 2;
+  background: var(--paper);
+}
+.tutorial-methods .tutorial-card-title {
+  margin-top: 2px;
+}
+.tutorial-methods .tutorial-card-title,
+.tutorial-methods p {
+  grid-column: 2;
+}
+
+.tutorial-log-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 6px;
+}
+.tutorial-log-head .tutorial-h {
+  margin: 0;
+}
+.tutorial-version {
+  padding: 2px 8px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-ligatures: none;
+}
+.tutorial-log-note {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted-text);
+}
+.tutorial-log-item {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 14px 16px;
+}
+.tutorial-log-item.is-fix {
+  border-style: dashed;
+}
+.tutorial-log-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--muted-text);
+  font-variant-numeric: tabular-nums;
+}
+/* Change tags (v1.12.0). Told apart by form, not by hue: solid fill = new, solid outline = improved,
+   dashed outline = fix. The app's pink and teal stay reserved for odd and even letters. */
+.tutorial-tag,
+.rel-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--muted-text);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-text);
+  font-variant-ligatures: none;
+}
+.tutorial-tag.is-new,
+.rel-tag.is-new {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.tutorial-tag.is-improved,
+.rel-tag.is-improved {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.tutorial-tag.is-fix,
+.rel-tag.is-fix {
+  border-style: dashed;
+}
+.tutorial-log-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0; /* pixel font: no negative tracking */
+}
+.tutorial-log-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted-text);
+  text-wrap: pretty;
+}
+
+/* ---- Release history inside the tutorial: one <details> per version, newest first ---- */
+.tutorial-release + .tutorial-release {
+  margin-top: 6px;
+  border-top: 1px dashed var(--border);
+}
+.tutorial-release-sum {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 12px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.tutorial-release-sum::-webkit-details-marker {
+  display: none;
+}
+.tutorial-release-sum:focus-visible {
+  outline-offset: -2px;
+}
+.tutorial-release-ver {
+  padding: 2px 8px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-ligatures: none;
+}
+.tutorial-release-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0; /* pixel font: no negative tracking */
+}
+.tutorial-release-badge {
+  padding: 1px 7px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tutorial-release-date,
+.tutorial-release-count {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted-text);
+  font-variant-numeric: tabular-nums;
+}
+.tutorial-release-count {
+  margin-left: auto;
+}
+.tutorial-release-chev {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 4px 0 2px;
+  border-right: 1.5px solid var(--muted-text);
+  border-bottom: 1.5px solid var(--muted-text);
+  transform: rotate(-45deg);
+  transition: transform 200ms var(--ease-out);
+}
+.tutorial-release[open] > .tutorial-release-sum .tutorial-release-chev {
+  transform: rotate(45deg);
+}
+.tutorial-release-blurb {
+  margin: 0 4px 14px;
+  max-width: 68ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted-text);
+  text-wrap: pretty;
+}
+.tutorial-release > .tutorial-log {
+  margin-bottom: 18px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .tutorial-release-sum:hover {
+    background: var(--canvas);
+  }
+}
+/* Smooth open and close where the browser can animate the hidden part of <details>;
+   everywhere else the panel simply appears, which is still correct. */
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  @supports selector(details::details-content) {
+    .tutorial-release::details-content {
+      block-size: 0;
+      overflow: clip;
+      opacity: 0;
+      transition:
+        block-size 240ms var(--ease-out),
+        opacity 160ms var(--ease-out),
+        content-visibility 240ms allow-discrete;
+    }
+    .tutorial-release[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-release-chev {
+    transition: none;
+  }
+  .tutorial-release::details-content {
+    transition: opacity 150ms ease !important;
+  }
+}
+
+/* ---- Release history inside the "Version notes" popover ---- */
+.rel-box {
+  max-height: min(72vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.rel + .rel {
+  margin-top: 18px;
+}
+.rel-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+}
+.rel-name {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.rel-badge {
+  padding: 0 6px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+.rel-date {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted-text);
+}
+.rel-blurb {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted-text);
+}
+.rel-hr {
+  margin: 10px 0;
+  border: 0;
+  border-top: 1px dashed var(--border);
+}
+.rel-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rel-list strong {
+  color: var(--ink);
+}
+.rel-tag {
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+
+.tutorial-split {
+  display: grid;
+  gap: 20px;
+}
+
+/* ---- Breakpoints (same ones the app uses: 600 and 1000) ---- */
+@media (min-width: 640px) {
+  .tutorial-methods,
+  .tutorial-log {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 800px) {
+  .tutorial-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1000px) {
+  .tutorial {
+    max-width: 1080px;
+  }
+  /* Same columns, gap and padding as the app's two panes, so the grid lines up with the card above. */
+  .tutorial-split {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    column-gap: 36px;
+    align-items: start;
+  }
+  .tutorial-log {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .tutorial {
+    margin: 0 12px 12px;
+  }
+  .app:has(+ .tutorial) {
+    margin-bottom: 12px;
+  }
+  .tutorial-head {
+    padding: 22px 16px 16px;
+  }
+  .tutorial-title {
+    font-size: 18px;
+  }
+  .tutorial-tab-btn,
+  .tutorial-tab-face {
+    flex: 1 1 0;
+    padding: 14px 8px;
+  }
+  .tutorial-panel {
+    padding: 20px 16px 24px;
+  }
+  .tutorial-section + .tutorial-section {
+    margin-top: 24px;
+    padding-top: 24px;
+  }
+  .tutorial-defs > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .tutorial-steps > li {
+    padding-left: 38px;
+  }
+}
+
+/* ---- Motion: each section of a panel rises in, 50 ms apart, capped.
+   Armed only after the first paint ([data-ready]), so the visible panel
+   does not replay on load; the hidden one animates the first time it shows.
+   A transition (not a keyframe) so quick tab changes retarget instead of restarting. ---- */
+.tutorial-panel > .tutorial-section:nth-child(2) {
+  --i: 1;
+}
+.tutorial-panel > .tutorial-section:nth-child(3) {
+  --i: 2;
+}
+.tutorial-panel > .tutorial-section:nth-child(n + 4) {
+  --i: 3;
+}
+.tutorial[data-ready] .tutorial-panel > .tutorial-section {
+  transition:
+    opacity 260ms var(--ease-out),
+    translate 260ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 50ms);
+}
+@starting-style {
+  .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+    transition: opacity 150ms ease;
+    transition-delay: 0s;
+  }
+  @starting-style {
+    .tutorial[data-ready] .tutorial-panel > .tutorial-section {
+      opacity: 0;
+      translate: none;
+    }
+  }
+  .tutorial-tabs-active {
+    transition: none;
+  }
+  .tutorial-tab-btn {
+    transition: color 150ms ease;
+  }
+  .tutorial-tab-btn:active {
+    transform: none;
+  }
+}
+@media (prefers-contrast: more) {
+  .tutorial-tile,
+  .tutorial-ui {
+    border-color: currentColor;
+  }
+}
+@media (forced-colors: active) {
+  .tutorial-tab-face {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-bottom-color: Highlight;
+  }
+  .tutorial-tile {
+    border: 1px solid CanvasText;
+  }
+}
