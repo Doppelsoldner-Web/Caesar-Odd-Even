@@ -1,0 +1,1055 @@
+<!--
+======================================================================
+MIT License
+
+Copyright (c) 2026
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+======================================================================
+-->
+
+<!doctype html>
+<!-- 
+  The <html> tag is the root of every web document. 
+  The "lang='en'" attribute tells the browser and screen readers the main language.
+  The "data-theme='light'" attribute is a custom data attribute used by JavaScript and CSS 
+  to identify and switch the page's current color theme.
+-->
+<html lang="en" data-theme="light">
+  <head>
+    <!-- 
+      The <meta charset="UTF-8"> tag makes sure special characters (like accents)
+      are read correctly by the browser.
+    -->
+    <meta charset="UTF-8" />
+
+    <!-- 
+      The <meta name="viewport"> tag is essential for a responsive site.
+      It makes the page width match the phone screen width,
+      preventing the site from showing up with a tiny zoom.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Theme setup (v1.12.0). These two metas tell the browser the page supports both schemes
+      (native form controls, scrollbars, mobile address bar) and the script right below picks the
+      theme BEFORE the first paint, so a dark-mode visitor never sees a white flash.
+      Order of choice: the theme saved by the toggle button, otherwise the system setting.
+    -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" />
+    <script>
+      (function () {
+        var theme = "light";
+        try {
+          var saved = localStorage.getItem("cipherTheme");
+          if (saved === "light" || saved === "dark") theme = saved;
+          else if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          )
+            theme = "dark";
+        } catch (e) {}
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.classList.add("js");
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#000000" : "#ffffff");
+      })();
+    </script>
+
+    <!--
+      FONT CREDITS
+      Font ..... Minecraft Default: MinecraftDefault-Regular / Bold / Italic / BoldItalic (.ttf), in the Assets/ folder
+      Made by .. tryashtar  (https://github.com/tryashtar)
+      Project .. Minecraft TTF v1.6  https://github.com/tryashtar/minecraft-ttf/releases#release-v1.6
+      The glyph shapes are Minecraft's default text font; the font files' own metadata reads
+      "Copyright (c) 2009 Mojang AB".
+    -->
+
+    <!--
+      Early font fetch: Regular and Bold carry nearly all the text, so on a real server (GitHub Pages) the
+      browser starts downloading them before the CSS asks, which avoids a visible swap from the fallback font.
+      It is skipped on file:// pages, where browsers refuse CORS-mode font requests (the @font-face rules
+      still load the fonts there, just a moment later).
+    -->
+    <script>
+      if (/^https?:$/.test(location.protocol))
+        ["Regular", "Bold"].forEach(function (face) {
+          var link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "font";
+          link.type = "font/ttf";
+          link.crossOrigin = "anonymous";
+          link.href = "Assets/MinecraftDefault-" + face + ".ttf";
+          document.head.appendChild(link);
+        });
+    </script>
+
+    <!-- The <title> tag sets the name of the tab in the browser. -->
+    <title>Odd/Even Cipher — Encoder &amp; Decoder</title>
+
+    <!-- Stylesheet: all the visual styling lives in css/style.css (relative path, no leading slash). -->
+    <link rel="stylesheet" href="css/style.css?v=1.16.0" />
+
+    <!-- Beach Backdrop (v1.16.0): page frame + translucent surfaces. Loaded after style.css so it can refine it. -->
+    <link rel="stylesheet" href="css/glass.css?v=1.16.0" />
+  </head>
+  <body>
+    <!--
+      ==================================
+      HTML DOCUMENTATION
+      ==================================
+      The <body> tag contains all the elements visible to the user.
+    -->
+    <!--
+      BEACH BACKDROP (v1.16.0)
+      1. A beach video is fixed behind the whole page (muted, looping, no controls): the daytime beach in the
+         light theme, the night beach in the dark theme. Only the one that is showing is downloaded and
+         played (banner.js), and the two cross-fade when the theme changes. The <source> lines are tried
+         in order (small MP4, small WebM, and for the day video your original file).
+      2. The banner is white in the light theme and black in the dark one. The version, theme and history
+         buttons live in its top right corner. Its title decodes itself (banner.js): GFVDYNO -> WELCOME.
+    -->
+    <video
+      id="bgVideo"
+      class="bg-video"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster="Assets/Beach-poster.jpg"
+      aria-hidden="true"
+      tabindex="-1"
+      disablepictureinpicture
+      disableremoteplayback
+    >
+      <source src="Assets/Beach-1080.mp4" type="video/mp4" />
+      <source src="Assets/Beach-1080.webm" type="video/webm" />
+      <source src="Assets/Beach.mp4" type="video/mp4" />
+    </video>
+    <video
+      id="bgVideoNight"
+      class="bg-video bg-video-night"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster="Assets/BeachNight-poster.jpg"
+      aria-hidden="true"
+      tabindex="-1"
+      disablepictureinpicture
+      disableremoteplayback
+    >
+      <source src="Assets/BeachNight-1080.mp4" type="video/mp4" />
+      <source src="Assets/BeachNight-1080.webm" type="video/webm" />
+    </video>
+
+    <header class="banner" id="banner">
+    <!-- TOP CONTROLS (History and Theme buttons) -->
+    <div class="top-controls">
+      <!-- 
+        The <button> tag is a natively interactive element.
+        The browser knows this button can be focused with the "Tab" key (Accessibility)
+        and that pressing "Enter" triggers a click. JS will intercept that click.
+      -->
+      <button
+        id="historyBtn"
+        class="icon-btn history-toggle"
+        title="History"
+        aria-label="Recent history"
+        aria-expanded="false"
+      >
+        ⏱
+      </button>
+      <button
+        id="themeBtn"
+        class="icon-btn dark-toggle"
+        title="Switch theme"
+        aria-label="Switch theme"
+      >
+        🌙
+      </button>
+      <!-- A container to keep the update box anchored to the version button -->
+      <div style="display: contents">
+        <!-- The label ("v1.16.0") and the notes are written by the RELEASES script near the end of the page. -->
+        <button
+          id="updateLogBtn"
+          class="update-btn"
+          aria-label="Version notes"
+          aria-expanded="false"
+        >
+          v1.16.0
+        </button>
+
+        <!-- The history and update notes are hidden by default and use the 'floating-box' class -->
+        <div
+          id="updateLogBox"
+          class="floating-box rel-box"
+          role="region"
+          aria-label="Version notes"
+          tabindex="0"
+        >
+          <!-- Filled by renderPopover() from the RELEASES list: one block per version, newest first. -->
+          <div id="updateLogList"></div>
+        </div>
+      </div>
+
+      <!-- HISTORY BOX: A box identical to the updates one, but it renders the log dynamically with JavaScript -->
+      <div id="historyBox" class="floating-box">
+        <h3
+          style="
+            margin: 0 0 10px 0;
+            font-family: var(--mono);
+            font-size: 14px;
+          "
+        >
+          Recent History
+        </h3>
+        <button
+          type="button"
+          class="drawer-close"
+          id="historyCloseBtn"
+          aria-label="Close history"
+        >
+          ×
+        </button>
+        <ul id="historyList" class="history-list">
+          <li class="history-empty">No recent operations.</li>
+        </ul>
+      </div>
+    </div>
+      <h1 class="banner-title">
+        <button
+          type="button"
+          class="banner-roll"
+          id="bannerRoll"
+          aria-label="WELCOME. Play the cipher animation again."
+        >
+          <span class="roll" aria-hidden="true">WELCOME</span>
+        </button>
+      </h1>
+    </header>
+
+    <div class="app">
+      <!-- Hero Banner (Visual Introduction) -->
+      <div class="hero">
+        <p class="prompt">$ cipher --odd-even<span class="cursor"></span></p>
+        <p class="tagline">
+          Encode and decode phrases with Caesar cipher applied separately to odd
+          and even position letters of each word.
+        </p>
+      </div>
+
+      <!-- 
+        The TABS.
+        ARIA attributes (role="tablist" and role="tab") tell screen-reader software
+        (for visually impaired users) that this structure works as tabs, not just random buttons.
+        "data-tab" is a custom attribute. JavaScript reads it to know which tab to activate.
+      -->
+      <div class="tabs" role="tablist">
+        <button
+          class="tab-btn active"
+          role="tab"
+          data-tab="encode"
+          id="tab-encode"
+        >
+          encode.js
+        </button>
+        <button class="tab-btn" role="tab" data-tab="decode" id="tab-decode">
+          decode.js
+        </button>
+      </div>
+
+      <!-- ===================== PANEL: ENCODER ===================== -->
+      <!-- The <section> tag divides page content into blocks for better HTML semantics -->
+      <section class="panel active" id="panel-encode" role="tabpanel">
+        <div class="pane pane-in">
+        <div class="field">
+          <!-- The <label> tag associates a text with an interactive element using the "for" attribute matching the "id" -->
+          <label for="encPhrase">Original phrase</label>
+          <!-- The <textarea> tag allows long (multi-line) text input from the user -->
+          <textarea
+            id="encPhrase"
+            rows="2"
+            placeholder="Ex.: Stuck in the rooms"
+          ></textarea>
+        </div>
+        <div class="options-row">
+          <!-- Interactive checkbox element that allows binary (yes/no) choices -->
+          <input type="checkbox" id="encKeepSpecial" />
+          <label for="encKeepSpecial" style="margin: 0; font-size: 13px"
+            >Preserve special characters and accents (A-Z/a-z will be ciphered,
+            the rest stays intact)</label
+          >
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="encConfigBtn">
+            Configure shifts
+          </button>
+          <button type="button" class="btn ghost" id="encClearBtn">
+            Clear
+          </button>
+        </div>
+
+        <!-- Boolean HTML attributes like 'hidden' hide the element. JS removes them to show it. -->
+        <p class="words-info" id="encWordsInfo" hidden></p>
+        <p class="legend" id="encLegend" hidden>
+          <span
+            ><span class="swatch odd"></span>odd position (1st, 3rd...)</span
+          >
+          <span
+            ><span class="swatch even"></span>even position (2nd, 4th...)</span
+          >
+        </p>
+
+        <!-- STRENGTH INDICATOR: A visual graphic built through DOM manipulation. -->
+        
+
+        <!-- This div starts empty. JavaScript fills it (innerHTML) with full rows based on the text. -->
+        <div id="encShiftsContainer" data-word-count="0"></div>
+
+        <div class="fast-fill-wrap" id="encFastFill" hidden>
+          <p class="fast-fill-title">Quick Fill / Advanced Patterns</p>
+          <div class="fast-fill-row">
+            <label class="fast-fill-field odd">
+              <span>Odd Pattern (Ex: 2 or 1,4)</span>
+              <!-- input[type="text"] is a single-line field for general typing. -->
+              <input
+                type="text"
+                id="encFastOdd"
+                placeholder="Ex: 2"
+                autocomplete="off"
+              />
+            </label>
+            <label class="fast-fill-field even">
+              <span>Even Pattern (Ex: 5 or 3,2)</span>
+              <input
+                type="text"
+                id="encFastEven"
+                placeholder="Ex: 5"
+                autocomplete="off"
+              />
+            </label>
+            <button type="button" class="btn" id="encFastApplyBtn">
+              Apply
+            </button>
+            <button
+              type="button"
+              class="btn ghost"
+              id="encRandomBtn"
+              title="Random shifts"
+              style="padding: 10px 14px"
+            >
+              🎲
+            </button>
+            <button
+              type="button"
+              class="btn ghost"
+              id="encResetBtn"
+              title="Reset all shifts to 0"
+            >
+              Reset Shifts
+            </button>
+          </div>
+          <div class="presets-row">
+            <span class="presets-label">Presets:</span>
+            <button type="button" class="btn ghost sm" id="presetRot13">
+              ROT13
+            </button>
+            <button type="button" class="btn ghost sm" id="presetFibonacci">
+              Fibonacci
+            </button>
+            <button type="button" class="btn ghost sm" id="presetProgressive">
+              Progressive (+1,+2)
+            </button>
+          </div>
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn" id="encSubmitBtn">Encode</button>
+          <button type="button" class="btn swap" id="swapBtn" hidden>
+            Transfer to Decoder ⇄
+          </button>
+        </div>
+
+        <div
+          id="encAlert"
+          class="alert"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+
+        </div>
+
+        <div class="pane pane-out">
+          <div class="preview" id="encPreview">
+            <p class="console-label">// live preview</p>
+            <div class="tiles" id="encTiles" aria-hidden="true" hidden></div>
+            <p class="tiles-hint" id="encTilesHint">
+              Configure shifts to watch every letter move.
+            </p>
+          </div>
+
+          <div class="strength-container" id="encStrengthContainer" hidden>
+          <div class="strength-label">
+            <span>Cipher Strength</span>
+            <!-- The <span> tag groups part of a text without breaking the line. -->
+            <span id="encStrengthText">Weak</span>
+          </div>
+          <div class="strength-bar-wrap">
+            <div id="encStrengthBar" class="strength-fill"></div>
+          </div>
+        </div>
+
+          <div class="console-wrap" id="encResultWrap" hidden>
+          <p class="console-label">// encoded result</p>
+          <div class="console">
+            <span class="console-text" id="encResult"></span>
+            <button type="button" class="copy-btn" id="encCopyBtn">copy</button>
+          </div>
+          <p class="console-label" style="margin-top: 18px">// word lengths</p>
+          <div class="console">
+            <span class="console-text" id="encSizes"></span>
+            <button type="button" class="copy-btn" id="encSizesCopyBtn">
+              copy
+            </button>
+          </div>
+          <p class="console-label" style="margin-top: 18px">
+            // shifts used (odd, even)
+          </p>
+          <div class="console">
+            <span class="console-text" id="encShiftsResult"></span>
+            <button type="button" class="copy-btn" id="encShiftsCopyBtn">
+              copy
+            </button>
+          </div>
+
+          <div style="margin-top: 20px">
+            <button
+              type="button"
+              class="btn"
+              id="encCopyAllBtn"
+              style="width: 100%; border-radius: 8px"
+            >
+              Copy All Data
+            </button>
+          </div>
+
+          <div class="link-row">
+            <button type="button" class="btn ghost" id="encLinkBtn">
+              Copy link 🔗
+            </button>
+            <label class="link-opt"
+              ><input type="checkbox" id="encLinkShifts" checked /> include
+              shifts in link</label
+            >
+          </div>
+          <input
+            type="text"
+            class="link-field"
+            id="encLinkField"
+            readonly
+            hidden
+            aria-label="Shareable link"
+          />
+        </div>
+      </div>
+      </section>
+
+      <!-- ===================== PANEL: DECODER ===================== -->
+      <section class="panel" id="panel-decode" role="tabpanel">
+        <div class="pane pane-in">
+        <div class="row-actions" style="margin-bottom: 18px; margin-top: 0">
+          <button type="button" class="btn paste-btn" id="decPasteAllBtn">
+            Paste Data 📋
+          </button>
+        </div>
+
+        <div class="field">
+          <label for="decMessage">Encoded message</label>
+          <textarea
+            id="decMessage"
+            rows="2"
+            placeholder="Ex.: Fscxsvyvhnubtxy"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label for="decSizes"
+            >Original word lengths (separated by commas)</label
+          >
+          <input type="text" id="decSizes" placeholder="Ex.: 5, 2, 3, 5" />
+        </div>
+
+        <div class="row-actions">
+          <button type="button" class="btn ghost" id="decConfigBtn">
+            Configure shifts
+          </button>
+          <button type="button" class="btn ghost" id="decClearBtn">
+            Clear
+          </button>
+        </div>
+
+        <p class="words-info" id="decWordsInfo" hidden></p>
+
+        <div id="decShiftsContainer" data-word-count="0"></div>
+
+        <div class="row-actions">
+          <button type="button" class="btn" id="decSubmitBtn">Decode</button>
+        </div>
+
+        <div
+          id="decAlert"
+          class="alert"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></div>
+
+        </div>
+
+        <div class="pane pane-out">
+          <div class="preview" id="decPreview">
+            <p class="console-label">// live preview</p>
+            <div class="tiles" id="decTiles" aria-hidden="true" hidden></div>
+            <p class="tiles-hint" id="decTilesHint">
+              Configure shifts to preview the decoding.
+            </p>
+          </div>
+
+          <div class="console-wrap" id="decResultWrap" hidden>
+          <p class="console-label">// original phrase</p>
+          <div class="console">
+            <span class="console-text" id="decResult"></span>
+            <button type="button" class="copy-btn" id="decCopyBtn">copy</button>
+          </div>
+        </div>
+      </div>
+      </section>
+    </div>
+
+    <!-- ===================== TUTORIAL: HOW DO I USE THIS? =====================
+      A separate card below the main app. Its tabs (tutorial-tab-btn) and panels
+      (tutorial-panel) are driven by their own script at the end of the page and
+      never touch the encoder / decoder tabs. -->
+    <section class="tutorial" id="tutorial" aria-labelledby="tutorialTitle">
+      <header class="tutorial-head">
+        <h2 class="tutorial-title" id="tutorialTitle">How do I use this?</h2>
+        <p class="tutorial-lead">
+          A short tour of the encoder and the decoder: what each control does,
+          and how to carry a message from one to the other.
+        </p>
+      </header>
+
+      <div class="tutorial-tabs">
+        <div
+          class="tutorial-tablist"
+          role="tablist"
+          aria-label="Tutorial sections"
+        >
+          <button
+            type="button"
+            class="tutorial-tab-btn"
+            role="tab"
+            id="tutorial-tab-encode"
+            data-tutorial-tab="encode"
+            aria-selected="true"
+            aria-controls="tutorial-panel-encode"
+          >
+            encode.js
+          </button>
+          <button
+            type="button"
+            class="tutorial-tab-btn"
+            role="tab"
+            id="tutorial-tab-decode"
+            data-tutorial-tab="decode"
+            aria-selected="false"
+            aria-controls="tutorial-panel-decode"
+            tabindex="-1"
+          >
+            decode.js
+          </button>
+        </div>
+        <!-- Visual copy of the tab list in its "selected" look. The script clips it to the selected tab. Hidden from assistive tech. -->
+        <div class="tutorial-tabs-active" aria-hidden="true">
+          <span class="tutorial-tab-face">encode.js</span>
+          <span class="tutorial-tab-face">decode.js</span>
+        </div>
+      </div>
+
+      <div class="tutorial-panels">
+        <!-- ---------- TUTORIAL PANEL: encode.js ---------- -->
+        <div
+          class="tutorial-panel"
+          role="tabpanel"
+          id="tutorial-panel-encode"
+          aria-labelledby="tutorial-tab-encode"
+          tabindex="0"
+        >
+          <section class="tutorial-section" aria-labelledby="tut-enc-guide">
+            <h3 class="tutorial-h" id="tut-enc-guide">Encoding guide</h3>
+            <div class="tutorial-split">
+              <div>
+                <ol class="tutorial-steps" role="list">
+                  <li>
+                    <strong>Write your phrase.</strong> Type or paste it into
+                    <kbd class="tutorial-ui">Original phrase</kbd>. Tick
+                    <kbd class="tutorial-ui is-wrap"
+                      >Preserve special characters and accents</kbd
+                    >
+                    to keep digits, punctuation and accents as typed (only A–Z
+                    and a–z get ciphered). Leave it off and accents become plain
+                    letters while digits and symbols are dropped.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui">Configure shifts</kbd>.</strong
+                    >
+                    Every word gets its own row with two boxes: one shift for its
+                    <span class="tutorial-odd"
+                      ><span class="swatch odd" aria-hidden="true"></span
+                      >odd</span
+                    >
+                    letters (1st, 3rd, 5th…) and one for its
+                    <span class="tutorial-even"
+                      ><span class="swatch even" aria-hidden="true"></span
+                      >even</span
+                    >
+                    letters (2nd, 4th, 6th…).
+                  </li>
+                  <li>
+                    <strong>Set the shifts.</strong> A shift is how many places a
+                    letter moves forward in the alphabet, from 0 to 25, wrapping
+                    around after Z. Type a number, or drag the thin track under
+                    any box. In the <em>live preview</em>, each original letter
+                    sits above the letter it becomes.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui is-solid">Encode</kbd>.</strong
+                    >
+                    You get the encoded message, the word lengths and the shifts
+                    used. Keep all three: the decoder needs them.
+                  </li>
+                </ol>
+                <p class="tutorial-note">
+                  <strong>How it works.</strong> Each word is ciphered on its
+                  own, then the words are interleaved: the first letter of every
+                  word, then the second letter of every word, and so on, as one
+                  block without spaces. That is why decoding also needs the word
+                  lengths.
+                </p>
+              </div>
+
+              <figure class="tutorial-example">
+                <figcaption class="tutorial-eyebrow">// worked example</figcaption>
+                <p class="tutorial-ex-label">Original phrase</p>
+                <p class="tutorial-ex-phrase">Stuck in the rooms</p>
+                <div class="tutorial-tiles">
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 1: Stuck becomes Fshbx"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">1</span>
+                    <span class="tutorial-tile odd"><i>S</i><b>F</b></span>
+                    <span class="tutorial-tile even"><i>t</i><b>s</b></span>
+                    <span class="tutorial-tile odd"><i>u</i><b>h</b></span>
+                    <span class="tutorial-tile even"><i>c</i><b>b</b></span>
+                    <span class="tutorial-tile odd"><i>k</i><b>x</b></span>
+                  </div>
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 2: in becomes sv"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">2</span>
+                    <span class="tutorial-tile odd"><i>i</i><b>s</b></span>
+                    <span class="tutorial-tile even"><i>n</i><b>v</b></span>
+                  </div>
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 3: the becomes cyn"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">3</span>
+                    <span class="tutorial-tile odd"><i>t</i><b>c</b></span>
+                    <span class="tutorial-tile even"><i>h</i><b>y</b></span>
+                    <span class="tutorial-tile odd"><i>e</i><b>n</b></span>
+                  </div>
+                  <div
+                    class="tutorial-tile-row"
+                    role="img"
+                    aria-label="Word 4: rooms becomes xvuty"
+                  >
+                    <span class="tutorial-tile-num" aria-hidden="true">4</span>
+                    <span class="tutorial-tile odd"><i>r</i><b>x</b></span>
+                    <span class="tutorial-tile even"><i>o</i><b>v</b></span>
+                    <span class="tutorial-tile odd"><i>o</i><b>u</b></span>
+                    <span class="tutorial-tile even"><i>m</i><b>t</b></span>
+                    <span class="tutorial-tile odd"><i>s</i><b>y</b></span>
+                  </div>
+                </div>
+                <p class="tutorial-ex-cap">
+                  Row 1 shifts its
+                  <span class="tutorial-odd">odd</span> letters by
+                  <span class="tutorial-odd">13</span> and its
+                  <span class="tutorial-even">even</span> letters by
+                  <span class="tutorial-even">25</span>. Every other row has its
+                  own pair.
+                </p>
+                <dl class="tutorial-console">
+                  <div>
+                    <dt>// encoded result</dt>
+                    <dd>Fscxsvyvhnubtxy</dd>
+                  </div>
+                  <div>
+                    <dt>// word lengths</dt>
+                    <dd>5, 2, 3, 5</dd>
+                  </div>
+                  <div>
+                    <dt>// shifts used (odd, even)</dt>
+                    <dd>[13, 25], [10, 8], [9, 17], [6, 7]</dd>
+                  </div>
+                </dl>
+              </figure>
+            </div>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-enc-adv">
+            <h3 class="tutorial-h" id="tut-enc-adv">Advanced functions</h3>
+            <p class="tutorial-p">
+              Click <kbd class="tutorial-ui">Configure shifts</kbd> and a
+              <strong>Quick Fill / Advanced Patterns</strong> panel appears under
+              the word rows, so you never have to type every shift by hand.
+            </p>
+            <dl class="tutorial-defs">
+              <div>
+                <dt>
+                  <kbd class="tutorial-ui">Odd Pattern</kbd>
+                  <kbd class="tutorial-ui">Even Pattern</kbd>
+                  <kbd class="tutorial-ui is-solid">Apply</kbd>
+                </dt>
+                <dd>
+                  Type one number (<code>2</code>) to use it for every word, or
+                  a comma-separated list (<code>1,4</code>) to cycle through the
+                  words in order, then press Apply. Apply only fills boxes that
+                  are empty or 0, so shifts you already set are kept.
+                </dd>
+              </div>
+              <div>
+                <dt><kbd class="tutorial-ui">🎲</kbd></dt>
+                <dd>
+                  Random. Fills every odd and even box with a random number from
+                  0 to 25.
+                </dd>
+              </div>
+              <div>
+                <dt><kbd class="tutorial-ui">Reset Shifts</kbd></dt>
+                <dd>Sets every box back to 0.</dd>
+              </div>
+              <div>
+                <dt>
+                  <kbd class="tutorial-ui">ROT13</kbd>
+                  <kbd class="tutorial-ui">Fibonacci</kbd>
+                  <kbd class="tutorial-ui">Progressive (+1,+2)</kbd>
+                </dt>
+                <dd>
+                  Presets: one click fills every box, replacing what is there.
+                  <strong>ROT13</strong> puts 13 everywhere.
+                  <strong>Fibonacci</strong> walks 1, 2, 3, 5, 8, 13, 21 across
+                  the words, with even letters one step ahead of odd ones.
+                  <strong>Progressive</strong> starts at 1 for odd letters and 2
+                  for even letters, then adds one with each word.
+                </dd>
+              </div>
+              <div>
+                <dt>Cipher Strength</dt>
+                <dd>
+                  The bar under the live preview rates how varied your shifts
+                  are. The more different numbers across all the boxes, the
+                  fuller it gets:
+                  <span class="tutorial-dot is-weak" aria-hidden="true"></span
+                  >Weak,
+                  <span class="tutorial-dot is-medium" aria-hidden="true"></span
+                  >Medium,
+                  <span class="tutorial-dot is-strong" aria-hidden="true"></span
+                  >Strong. One number everywhere, like ROT13, rates Weak. It is
+                  a quick guide, not real security.
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-enc-export">
+            <h3 class="tutorial-h" id="tut-enc-export">Export and copy</h3>
+            <p class="tutorial-p">
+              After <kbd class="tutorial-ui is-solid">Encode</kbd> the result
+              shows up in three boxes: the encoded message, the word lengths and
+              the shifts used. There are three ways to take it with you.
+            </p>
+            <ul class="tutorial-cards" role="list">
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">One piece at a time</h4>
+                <p>
+                  Every box has a small
+                  <kbd class="tutorial-ui is-console">copy</kbd> button. It reads
+                  <samp>copied!</samp> for a moment when it worked. Handy when
+                  you only need one piece.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Everything at once</h4>
+                <p>
+                  <kbd class="tutorial-ui is-solid">Copy All Data</kbd> puts all
+                  three on your clipboard as one labelled block (Message,
+                  Lengths, Shifts). The decoder's
+                  <kbd class="tutorial-ui is-green">Paste Data 📋</kbd> button
+                  reads exactly that.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">As a link</h4>
+                <p>
+                  <kbd class="tutorial-ui">Copy link 🔗</kbd> copies an address
+                  that re-opens the message and the word lengths in the Decoder,
+                  and the shifts too while
+                  <em>include shifts in link</em> is ticked. Untick it to send
+                  the shifts some other way. The link also appears in a field
+                  under the button.
+                </p>
+              </li>
+            </ul>
+            <p class="tutorial-tip">
+              <strong>Want to test the round trip?</strong>
+              <kbd class="tutorial-ui is-green">Transfer to Decoder ⇄</kbd>
+              sends the message and the lengths to the decode.js tab. You add the
+              shifts there.
+            </p>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-enc-log">
+            <div class="tutorial-log-head">
+              <h3 class="tutorial-h" id="tut-enc-log">Update Log</h3>
+              <span class="tutorial-version" data-release-version>v1.16.0</span>
+            </div>
+            <p class="tutorial-log-note">
+              Every release, newest first, with what is new, what improved and
+              what was fixed. The latest notes also open from the
+              <span data-release-version>v1.16.0</span> button at the top of the
+              app.
+            </p>
+            <!-- Filled by renderTutorial() from the RELEASES list. -->
+            <div class="tutorial-releases" id="tutorialReleases"></div>
+          </section>
+        </div>
+
+        <!-- ---------- TUTORIAL PANEL: decode.js ---------- -->
+        <div
+          class="tutorial-panel"
+          role="tabpanel"
+          id="tutorial-panel-decode"
+          aria-labelledby="tutorial-tab-decode"
+          tabindex="0"
+          hidden
+        >
+          <section class="tutorial-section" aria-labelledby="tut-dec-guide">
+            <h3 class="tutorial-h" id="tut-dec-guide">Decoding guide</h3>
+            <div class="tutorial-split">
+              <div>
+                <p class="tutorial-p">
+                  Decoding runs the encoder backwards. It needs the same three
+                  things the encoder gave you: the
+                  <strong>encoded message</strong>, the
+                  <strong>word lengths</strong> and the <strong>shifts</strong>
+                  (an odd and an even number for every word).
+                </p>
+                <ol class="tutorial-steps" role="list">
+                  <li>
+                    <strong>Fill in the message and the lengths.</strong> Use any
+                    of the four methods below. A shared link or
+                    <kbd class="tutorial-ui is-green">Paste Data 📋</kbd> also
+                    builds the shift rows and, when the shifts are included,
+                    fills them in for you.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui">Configure shifts</kbd>.</strong
+                    >
+                    One row appears for each word in the lengths. Skip this step
+                    if a link or Paste Data already did it.
+                  </li>
+                  <li>
+                    <strong>Check the shifts.</strong> Every word needs its odd
+                    and its even shift, from 0 to 25, exactly as used when
+                    encoding. The live preview shows each letter turning back
+                    into the original.
+                  </li>
+                  <li>
+                    <strong
+                      >Click
+                      <kbd class="tutorial-ui is-solid">Decode</kbd>.</strong
+                    >
+                    The original phrase appears in the console, with its own
+                    copy button.
+                  </li>
+                </ol>
+                <p class="tutorial-note">
+                  <strong>If something looks off.</strong> The message must have
+                  exactly as many characters as the word lengths add up to.
+                  Gibberish means a shift or a length differs from the one used
+                  to encode. If you edit the lengths after configuring, the shift
+                  rows fade: click Configure shifts again.
+                </p>
+              </div>
+
+              <figure class="tutorial-example">
+                <figcaption class="tutorial-eyebrow">// worked example</figcaption>
+                <dl class="tutorial-console">
+                  <div>
+                    <dt>// encoded message</dt>
+                    <dd>Fscxsvyvhnubtxy</dd>
+                  </div>
+                  <div>
+                    <dt>// original word lengths</dt>
+                    <dd>5, 2, 3, 5</dd>
+                  </div>
+                  <div>
+                    <dt>// shifts (odd, even)</dt>
+                    <dd>[13, 25], [10, 8], [9, 17], [6, 7]</dd>
+                  </div>
+                </dl>
+                <p class="tutorial-ex-arrow" aria-hidden="true">↓ Decode</p>
+                <dl class="tutorial-console">
+                  <div>
+                    <dt>// original phrase</dt>
+                    <dd>Stuck in the rooms</dd>
+                  </div>
+                </dl>
+              </figure>
+            </div>
+          </section>
+
+          <section class="tutorial-section" aria-labelledby="tut-dec-methods">
+            <h3 class="tutorial-h" id="tut-dec-methods">
+              Four ways to fill in the decoder
+            </h3>
+            <p class="tutorial-p">
+              Pick whichever fits how the message reached you.
+            </p>
+            <ol class="tutorial-methods" role="list">
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Open a shared link</h4>
+                <p>
+                  Open a link made with
+                  <kbd class="tutorial-ui">Copy link 🔗</kbd>. The page jumps
+                  straight to decode.js and fills in the message and the word
+                  lengths, plus the shifts if the link carried them. Then press
+                  <kbd class="tutorial-ui is-solid">Decode</kbd>. If the shifts
+                  were left out, type them in first.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Use Paste Data 📋</h4>
+                <p>
+                  In the encoder, click
+                  <kbd class="tutorial-ui is-solid">Copy All Data</kbd>. Then, in
+                  the decoder, click
+                  <kbd class="tutorial-ui is-green">Paste Data 📋</kbd>: it fills
+                  in the message and the lengths, builds the rows and applies the
+                  shifts in one go. Your browser may ask permission to read the
+                  clipboard.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Paste block by block</h4>
+                <p>
+                  Copy each box with its small
+                  <kbd class="tutorial-ui is-console">copy</kbd> button. Paste
+                  the encoded result into
+                  <kbd class="tutorial-ui">Encoded message</kbd> and the word
+                  lengths into
+                  <kbd class="tutorial-ui">Original word lengths</kbd>, then
+                  click <kbd class="tutorial-ui">Configure shifts</kbd>. Enter
+                  the pairs from the shifts box in the rows: each [odd, even]
+                  pair belongs to the row with the same number.
+                </p>
+              </li>
+              <li class="tutorial-card">
+                <h4 class="tutorial-card-title">Type everything by hand</h4>
+                <p>
+                  Type the encoded message, then the word lengths separated by
+                  commas (like <code>5, 2, 3, 5</code>), click
+                  <kbd class="tutorial-ui">Configure shifts</kbd> and fill in
+                  each row. Press Enter, or type two digits, to jump to the next
+                  box.
+                </p>
+              </li>
+            </ol>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- === FOOTER === -->
+    <!-- The <footer> tag is semantically used for footers. It does not change the look, but improves SEO and structure. -->
+    <footer class="app-footer">
+      <span class="footer-left" data-release-footer>Odd/Even Cipher v1.16.0</span>
+      <span class="footer-center">"Aqui é o Brasil"<br />—Dominic Toretto</span>
+      <span class="footer-right">Doppelsoldner-Web</span>
+      <!-- Font credit (v1.13.0): the creator's name and the release page the files came from. -->
+      <p class="footer-credits">
+        Font:
+        <a
+          href="https://github.com/tryashtar/minecraft-ttf/releases#release-v1.6"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Minecraft TTF v1.6</a
+        >
+        by
+        <a
+          href="https://github.com/tryashtar"
+          target="_blank"
+          rel="noopener noreferrer"
+          >tryashtar</a
+        >
+        · glyphs © Mojang AB
+      </p>
+    </footer>
+
+
+    <!--
+      Scripts: plain (non-module) files, loaded in THIS order. They share globals, so do not reorder them.
+      They sit at the end of <body>, so the markup above already exists when they run.
+    -->
+    <script src="js/app.js?v=1.16.0"></script>
+    <script src="js/effects.js?v=1.16.0"></script>
+    <script src="js/preview.js?v=1.16.0"></script>
+    <script src="js/releases.js?v=1.16.0"></script>
+    <script src="js/tutorial.js?v=1.16.0"></script>
+    <!-- Beach Backdrop (v1.16.0): the decoding title and the background video. -->
+    <script src="js/banner.js?v=1.16.0"></script>
+  </body>
+</html>
